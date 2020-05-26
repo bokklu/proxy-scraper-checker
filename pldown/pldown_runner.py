@@ -1,4 +1,3 @@
-import asyncio
 import time
 import logging
 from dataclasses import dataclass
@@ -9,11 +8,9 @@ from pldown.pldown_checker import PldownChecker
 class PldownRunner:
     _pldown_checker: PldownChecker = PldownChecker()
 
-    def run_pldown_job(self):
+    def run_pldown_job(self, loop):
         logging.info(f'Pldown Job starting...')
         start_time = time.time()
-        loop = asyncio.ProactorEventLoop()
-        asyncio.set_event_loop(loop)
 
         try:
             loop.run_until_complete(self._pldown_checker.check_proxies())

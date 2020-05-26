@@ -11,12 +11,11 @@ class Scheduler:
     _pldown_runner: PldownRunner = PldownRunner()
     _proxyscrape_runner: ProxyScrapeRunner = ProxyScrapeRunner()
 
-    def schedule_jobs(self):
+    def schedule_jobs(self, loop):
         logging.info('Starting scheduler...')
 
-        schedule.every(1).hour.do(self._pldown_runner.run_pldown_job)
-        schedule.every(5).hours.do(self._proxyscrape_runner.run_proxyscrape_job)
-        self._pldown_runner.run_pldown_job()
+        schedule.every(1).hour.do(self._pldown_runner.run_pldown_job, loop)
+        schedule.every(5).hours.do(self._proxyscrape_runner.run_proxyscrape_job, loop)
 
         while True:
             schedule.run_pending()
