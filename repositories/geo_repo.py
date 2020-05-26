@@ -1,4 +1,3 @@
-import logging
 from contracts.isp import Isp
 from contracts.location import Location
 from config import geo_db
@@ -36,7 +35,7 @@ class GeoRepo:
                             accuracy_radius=city_record.location.accuracy_radius, timezone=city_record.location.time_zone)
 
         except AddressNotFoundError:
-            logging.warning(f'{proxy.address} not found in CITY mmdb...')
+            print(f'{proxy.address} not found in CITY mmdb...')
             return None
 
     def __isp_resolve(self, proxy):
@@ -50,7 +49,7 @@ class GeoRepo:
             else:
                 return None
         except AddressNotFoundError:
-            logging.warning(f'{proxy.address} not found in ASN mmdb...')
+            print(f'{proxy.address} not found in ASN mmdb...')
             return None
 
     def geo_resolve(self, proxies):
