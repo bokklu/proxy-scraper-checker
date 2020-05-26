@@ -1,0 +1,25 @@
+import asyncio
+import logging
+import async_timeout
+from config import provider_connections
+from contracts.scrape_info import ScrapeInfo
+from dataclasses import dataclass
+
+
+@dataclass
+class ProxyScrapeScraper:
+
+    @staticmethod
+    async def scrape(session, proxy_type):
+        try:
+            async with async_timeout.timeout(7):
+                async with session.get(f'{provider_connections["proxyscrape"]}&proxytype={str.lower(proxy_type.name)}') as response:
+                    content = await response.text()
+                    content_set = content.splitlines()
+                    return set(ScrapeInfo(proxy=x) for x in content_set)
+        except asyncio.TimeoutError as timeout_ex:
+            logging.error('ProxyScrape Scraper connection timed out...')
+            raise timeout_ex
+        except Exception as ex:
+            logging.error(f'ProxyScrape Scraper Exception: {str(ex)}')
+            raise ex
