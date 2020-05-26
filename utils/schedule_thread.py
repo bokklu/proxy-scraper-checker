@@ -14,7 +14,8 @@ class ScheduleThread(threading.Thread):
         if sys.platform == 'win32':
             loop = asyncio.ProactorEventLoop()
         elif sys.platform == 'linux':
-            loop = asyncio.SelectorEventLoop()
+            import uvloop
+            loop = uvloop.new_event_loop()
         else:
             logging.error('Unsupported platform...')
 
