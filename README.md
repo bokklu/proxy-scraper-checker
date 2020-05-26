@@ -26,7 +26,7 @@ The Proxy Location information entails the following properties:
 
 The proxies are then saved to an external PostgreSQL database.
 
-Libraries used:
+# Requirements:
 
 - asyncio
 - aiohttp
