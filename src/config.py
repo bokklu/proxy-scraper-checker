@@ -4,14 +4,14 @@ provider_connections = dict(
 )
 
 sql = dict(
-    host='localhost',
+    host='db',
     port='5432',
     database='proxydb',
-    user='postgres',
+    user='danny',
     password='123'
 )
 
 geo_db = dict(
-    city_db='C:/Users/danza/Downloads/GeoLite2-City_20200505/GeoLite2-City.mmdb',
-    asn_db='C:/Users/danza/Downloads/GeoLite2-ASN_20200512/GeoLite2-ASN.mmdb'
+    city_db='/app/src/data/GeoLite2-City.mmdb',
+    asn_db='/app/src/data/GeoLite2-ASN.mmdb'
 )
