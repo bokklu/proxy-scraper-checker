@@ -354,7 +354,7 @@ CREATE TYPE udt_isp AS
 	isp_name varchar(150)
 );
 
-CREATE TYPE udt_location AS
+CREATE TYPE udt_city AS
 (
 	proxy_address varchar(15),
 	latitude decimal,
@@ -398,7 +398,7 @@ BEGIN
 	DO NOTHING;
 	
 	INSERT INTO city (proxy_address, latitude, longitude, city_name, sub_division1, sub_division1_code, sub_division2, sub_division2_code, postal_code, accuracy_radius, timezone)
-	SELECT * FROM json_populate_recordset(null::udt_location, cities)
+	SELECT * FROM json_populate_recordset(null::udt_city, cities)
 	ON CONFLICT (proxy_address)
 	DO NOTHING;
 	

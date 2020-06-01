@@ -53,7 +53,7 @@ class GeoRepo:
             return None
 
     def geo_resolve(self, proxies):
-        isps, locations = set(), set()
+        isps, cities = set(), set()
 
         for proxy in proxies:
 
@@ -61,6 +61,6 @@ class GeoRepo:
             if isp_result is not None: isps.add(isp_result)
 
             city_result = self.__city_resolve(proxy)
-            if city_result is not None: locations.add(city_result)
+            if city_result is not None: cities.add(city_result)
 
-        return isps, locations
+        return isps, cities
