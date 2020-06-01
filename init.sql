@@ -350,8 +350,8 @@ INSERT INTO country (code, name, continent_code) VALUES
 
 CREATE TYPE udt_isp AS
 (
-	isp_id int,
-	isp_name varchar(150)
+	id int,
+	name varchar(150)
 );
 
 CREATE TYPE udt_city AS
