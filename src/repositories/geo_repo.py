@@ -45,7 +45,7 @@ class GeoRepo:
             proxy.isp_id = isn_number
 
             if isn_number is not None:
-                return Isp(isp_id=isp_record.autonomous_system_number, isp_name=isp_record.autonomous_system_organization)
+                return Isp(id=isp_record.autonomous_system_number, name=isp_record.autonomous_system_organization)
             else:
                 return None
         except AddressNotFoundError:
