@@ -404,10 +404,10 @@ BEGIN
 	
 	WITH t AS
 	(
-		INSERT INTO proxy (address, port, country_code, type_id, access_type_id, provider_id, isp_id, speed, uptime, created_date, modified_date)
+		INSERT INTO proxy as p (address, port, country_code, type_id, access_type_id, provider_id, isp_id, speed, uptime, created_date, modified_date)
 		SELECT *, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM json_populate_recordset(null::udt_proxy, proxies)
 		ON CONFLICT ON CONSTRAINT proxy_address_port_uc
-		DO UPDATE SET modified_date = CURRENT_TIMESTAMP RETURNING xmax
+		DO UPDATE SET speed = p.speed, uptime = p.uptime, modified_date = CURRENT_TIMESTAMP RETURNING xmax
 	)
 	
 	SELECT SUM(CASE WHEN xmax = 0 THEN 1 ELSE 0 END), SUM(CASE WHEN xmax::text::int > 0 THEN 1 ELSE 0 END)
