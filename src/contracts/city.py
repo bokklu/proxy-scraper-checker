@@ -1,7 +1,7 @@
 from recordclass import RecordClass
 
 
-class Location(RecordClass):
+class City(RecordClass):
     proxy_address: str
     latitude: float
     longitude: float
@@ -18,7 +18,7 @@ class Location(RecordClass):
         return hash(self.proxy_address)
 
     def __eq__(self, other):
-        if isinstance(other, Location):
+        if isinstance(other, City):
             return self.proxy_address == other.proxy_address
         else:
             return False

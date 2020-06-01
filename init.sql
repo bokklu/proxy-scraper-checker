@@ -1,41 +1,41 @@
 CREATE TABLE provider
 (
-	id smallint NOT NULL PRIMARY KEY,
-	name varchar(20) NOT NULL
+	provider_id smallint NOT NULL PRIMARY KEY,
+	provider_name varchar(20) NOT NULL
 );
 
 CREATE TABLE type
 (
-	id smallint PRIMARY KEY NOT NULL,
-	name varchar(10) NOT NULL
+	type_id smallint PRIMARY KEY NOT NULL,
+	type_name varchar(10) NOT NULL
 );
 
 CREATE TABLE access_type
 (
-	id smallint PRIMARY KEY NOT NULL,
-	name varchar(15) NOT NULL
+	access_type_id smallint PRIMARY KEY NOT NULL,
+	access_type_name varchar(15) NOT NULL
 );
 
 CREATE TABLE isp
 (
-	id int PRIMARY KEY NOT NULL,
-	name varchar(150)
+	isp_id int PRIMARY KEY NOT NULL,
+	isp_name varchar(150)
 );
 
 CREATE TABLE continent
 (
-	code char(2) PRIMARY KEY NOT NULL,
-	name varchar(20) NOT NULL
+	continent_code char(2) PRIMARY KEY NOT NULL,
+	continent_name varchar(20) NOT NULL
 );
 
 CREATE TABLE country
 (
-	code char(2) PRIMARY KEY NOT NULL,
-	name varchar(50) NOT NULL,
-	continent_code char(2) NOT NULL REFERENCES continent(code)
+	country_code char(2) PRIMARY KEY NOT NULL,
+	country_name varchar(50) NOT NULL,
+	continent_code char(2) NOT NULL REFERENCES continent(continent_code)
 );
 
-CREATE TABLE location
+CREATE TABLE city
 (
 	proxy_address varchar(15) PRIMARY KEY NOT NULL,
 	latitude decimal,
@@ -52,14 +52,14 @@ CREATE TABLE location
 
 CREATE TABLE proxy
 (
-	id SERIAL PRIMARY KEY NOT NULL,
-	address varchar(15) NOT NULL REFERENCES location(proxy_address),
+	proxy_id SERIAL PRIMARY KEY NOT NULL,
+	address varchar(15) NOT NULL REFERENCES city(proxy_address),
 	port int NOT NULL,
-	country_code char(2) REFERENCES country(code),
-	type_id smallint REFERENCES type(id) NOT NULL,
-	access_type_id smallint REFERENCES access_type(id) NOT NULL,
-	provider_id smallint REFERENCES provider(id) NOT NULL,
-	isp_id int REFERENCES isp(id),
+	country_code char(2) REFERENCES country(country_code),
+	type_id smallint REFERENCES type(type_id) NOT NULL,
+	access_type_id smallint REFERENCES access_type(access_type_id) NOT NULL,
+	provider_id smallint REFERENCES provider(provider_id) NOT NULL,
+	isp_id int REFERENCES isp(isp_id),
 	speed int NOT NULL,
 	uptime smallint NOT NULL,
 	created_date timestamp NOT NULL,
@@ -70,12 +70,12 @@ CREATE UNIQUE INDEX proxy_address_port_ui ON proxy (address, port, type_id);
 ALTER TABLE proxy
 ADD CONSTRAINT proxy_address_port_uc UNIQUE USING INDEX proxy_address_port_ui;
 
-INSERT INTO access_type (id, name) VALUES 
+INSERT INTO access_type (access_type_id, access_type_name) VALUES 
 (1, 'Transparent'),
 (2, 'Anonymous'),
 (3, 'Elite');
 
-INSERT INTO type (id, name) VALUES
+INSERT INTO type(type_id, type_name) VALUES
 (1, 'Http'),
 (2, 'Https'),
 (3, 'Http/s'),
@@ -83,11 +83,11 @@ INSERT INTO type (id, name) VALUES
 (5, 'Socks5'),
 (6, 'Socks4/5');
 
-INSERT INTO provider (id, name) VALUES
+INSERT INTO provider (provider_id, provider_name) VALUES
 (1, 'Pldown'),
 (2, 'ProxyScrape');
 
-INSERT INTO continent (code, name) VALUES
+INSERT INTO continent (continent_code, continent_name) VALUES
 ('EU', 'Europe'),
 ('AF', 'Africa'),
 ('AS', 'Asia'),
@@ -96,7 +96,7 @@ INSERT INTO continent (code, name) VALUES
 ('NA', 'North America'),
 ('SA', 'South America');
 
-INSERT INTO country (code, name, continent_code) VALUES
+INSERT INTO country (country_code, country_name, continent_code) VALUES
 ('AD', 'Andorra' ,'EU'),
 ('AE', 'United Arab Emirates' ,'AS'),
 ('AF', 'Afghanistan' ,'AS'),
@@ -388,17 +388,17 @@ CREATE TYPE udt_count AS
 	update_count int
 );
 
-CREATE OR REPLACE FUNCTION fn_insert_proxies(isps json, locations json, proxies json)
+CREATE OR REPLACE FUNCTION fn_insert_proxies(isps json, cities json, proxies json)
 RETURNS udt_count AS $func$
 DECLARE result_count udt_count;
 BEGIN
-	INSERT INTO isp (id, name)
+	INSERT INTO isp (isp_id, isp_name)
 	SELECT * FROM json_populate_recordset(null::udt_isp, isps) as udt_isps
-	ON CONFLICT (id)
+	ON CONFLICT (isp_id)
 	DO NOTHING;
 	
-	INSERT INTO location (proxy_address, latitude, longitude, city_name, sub_division1, sub_division1_code, sub_division2, sub_division2_code, postal_code, accuracy_radius, timezone)
-	SELECT * FROM json_populate_recordset(null::udt_location, locations)
+	INSERT INTO city (proxy_address, latitude, longitude, city_name, sub_division1, sub_division1_code, sub_division2, sub_division2_code, postal_code, accuracy_radius, timezone)
+	SELECT * FROM json_populate_recordset(null::udt_location, cities)
 	ON CONFLICT (proxy_address)
 	DO NOTHING;
 	

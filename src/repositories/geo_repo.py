@@ -1,5 +1,5 @@
 from contracts.isp import Isp
-from contracts.location import Location
+from contracts.city import City
 from config import geo_db
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
@@ -29,7 +29,7 @@ class GeoRepo:
                     sub_division2 = city_record.subdivisions[1].name
                     sub_division2_code = city_record.subdivisions[1].iso_code
 
-            return Location(proxy_address=proxy.address, latitude=city_record.location.latitude, longitude=city_record.location.longitude,
+            return City(proxy_address=proxy.address, latitude=city_record.location.latitude, longitude=city_record.location.longitude,
                             city_name=city_record.city.name, sub_division1=sub_division1, sub_division1_code=sub_division1_code,
                             sub_division2=sub_division2, sub_division2_code=sub_division2_code,  postal_code=city_record.postal.code,
                             accuracy_radius=city_record.location.accuracy_radius, timezone=city_record.location.time_zone)
