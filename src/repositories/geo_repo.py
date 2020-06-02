@@ -30,7 +30,7 @@ class GeoRepo:
                     sub_division2_code = city_record.subdivisions[1].iso_code
 
             return City(proxy_address=proxy.address, latitude=city_record.location.latitude, longitude=city_record.location.longitude,
-                            city_name=city_record.city.name, sub_division1=sub_division1, sub_division1_code=sub_division1_code,
+                            name=city_record.city.name, sub_division1=sub_division1, sub_division1_code=sub_division1_code,
                             sub_division2=sub_division2, sub_division2_code=sub_division2_code,  postal_code=city_record.postal.code,
                             accuracy_radius=city_record.location.accuracy_radius, timezone=city_record.location.time_zone)
 

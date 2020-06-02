@@ -5,7 +5,7 @@ class City(RecordClass):
     proxy_address: str
     latitude: float
     longitude: float
-    city_name: str
+    name: str
     sub_division1: str
     sub_division1_code: str
     sub_division2: str
