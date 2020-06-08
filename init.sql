@@ -42,9 +42,9 @@ CREATE TABLE city
 	longitude decimal,
 	city_name varchar(100),
 	sub_division1 varchar(100),
-	sub_division1_code char(3),
+	sub_division1_code varchar(3),
 	sub_division2 varchar(100),
-	sub_division2_code char(3),
+	sub_division2_code varchar(3),
 	postal_code varchar(20),
 	accuracy_radius smallint,
 	timezone varchar(50)
@@ -361,9 +361,9 @@ CREATE TYPE udt_city AS
 	longitude decimal,
 	city_name varchar(100),
 	sub_division1 varchar(100),
-	sub_division1_code char(3),
+	sub_division1_code varchar(3),
 	sub_division2 varchar(100),
-	sub_division2_code char(3),
+	sub_division2_code varchar(3),
 	postal_code varchar(20),
 	accuracy_radius smallint,
 	timezone varchar(50)
