@@ -1,3 +1,4 @@
+
 import time
 import logging
 from dataclasses import dataclass
@@ -14,7 +15,8 @@ class PldownRunner:
 
         try:
             loop.run_until_complete(self._pldown_checker.check_proxies())
-        except Exception:
+        except Exception as ex:
+            logging.error(ex)
             pass
 
         logging.info(f'Pldown Job took: {time.time() - start_time}')
