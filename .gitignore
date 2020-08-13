@@ -1,3 +1,8 @@
+# Solution Items
+
 .idea
 *__pycache__
 src/log-file.log
+
+# Secrets
+.env

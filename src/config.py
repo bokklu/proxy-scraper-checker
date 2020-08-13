@@ -7,8 +7,8 @@ sql = dict(
     host='db',
     port='5432',
     database='proxydb',
-    user='danny',
-    password='123'
+    user='postgres',
+    password='devpassword'
 )
 
 geo_db = dict(
