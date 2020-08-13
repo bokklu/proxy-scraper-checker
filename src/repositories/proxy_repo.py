@@ -1,9 +1,8 @@
 import asyncio
 import async_timeout
 import aiohttp
-import aiohttp_socks
 import time
-from aiohttp_socks import ProxyConnector
+from aiohttp_socks import ProxyConnector, ProxyError
 from contracts.statistics import Statistics
 from contracts.enums import Response, ProxyAccessType, ProxyType
 from dataclasses import dataclass
@@ -70,7 +69,7 @@ class ProxyRepo:
                                 return statistics
                 except asyncio.TimeoutError:
                     continue
-                except (OSError, aiohttp_socks.proxy.errors.ProxyError) as error_ex:
+                except (OSError, ProxyError) as error_ex:
                     print(f'{scrape_info.proxy} Error: {error_ex}')
                     if attempt == self.max_retries:
                         statistics.result_type = Response.ERROR
