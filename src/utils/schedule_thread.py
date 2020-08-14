@@ -19,6 +19,7 @@ class ScheduleThread(threading.Thread):
         else:
             logging.error('Unsupported platform...')
 
+        logging.info(f'Running on platform: {sys.platform}')
         asyncio.set_event_loop(loop)
 
         scheduler = Scheduler()
