@@ -1,9 +1,7 @@
-from contracts.enums import Response, ProxyType, Provider
-from contracts.proxy import Proxy
-from dataclasses import dataclass
+from src.contracts.enums import Response, ProxyType, Provider
+from src.contracts.proxy import Proxy
 
 
-@dataclass
 class ProxyHelper:
 
     @staticmethod

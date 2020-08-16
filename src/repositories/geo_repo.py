@@ -1,20 +1,20 @@
-from contracts.isp import Isp
-from contracts.city import City
-from config import geo_db
+from src.contracts.isp import Isp
+from src.contracts.city import City
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
-from dataclasses import dataclass
+from src.config import Config
 
 
-@dataclass
 class GeoRepo:
-    _city_db: Reader = Reader(geo_db['city_db'])
-    _asn_db: Reader = Reader(geo_db['asn_db'])
-    get_country: bool = False
+
+    def __init__(self, get_country):
+        self.get_country = get_country
+        self.__city_db = Reader(Config.settings.geo_db['city_db'])
+        self.__asn_db = Reader(Config.settings.geo_db['asn_db'])
 
     def __city_resolve(self, proxy):
         try:
-            city_record = self._city_db.city(proxy.address)
+            city_record = self.__city_db.city(proxy.address)
 
             if self.get_country: proxy.country_code = city_record.country.iso_code
 
@@ -40,7 +40,7 @@ class GeoRepo:
 
     def __isp_resolve(self, proxy):
         try:
-            isp_record = self._asn_db.asn(proxy.address)
+            isp_record = self.__asn_db.asn(proxy.address)
             isn_number = isp_record.autonomous_system_number
             proxy.isp_id = isn_number
 

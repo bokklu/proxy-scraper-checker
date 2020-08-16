@@ -3,24 +3,24 @@ import async_timeout
 import aiohttp
 import time
 from aiohttp_socks import ProxyConnector, ProxyError
-from contracts.statistics import Statistics
-from contracts.enums import Response, ProxyAccessType, ProxyType
-from dataclasses import dataclass
+from src.contracts.statistics import Statistics
+from src.contracts.enums import Response, ProxyAccessType, ProxyType
 
 
-@dataclass
 class ProxyRepo:
-    get_access_type: bool = False
-    timeout: int = 8
-    max_retries: int = 3
+
+    def __init__(self, get_access_type):
+        self.__get_access_type = get_access_type
+        self.__timeout = 8
+        self.__max_retries = 3
 
     async def ping_http(self, http_type, scrape_info):
         statistics = Statistics(type_id=http_type.value)
         async with aiohttp.ClientSession() as session:
             response_times = []
-            for attempt in range(self.max_retries):
+            for attempt in range(self.__max_retries):
                 try:
-                    async with async_timeout.timeout(self.timeout):
+                    async with async_timeout.timeout(self.__timeout):
                         req_start_time = time.time()
                         async with session.get(f'{http_type.name.lower()}://example.com', proxy=f'http://{scrape_info.proxy}', allow_redirects=False, verify_ssl=False) as response:
                             if response.status == 200 or response.status == 302:
@@ -32,7 +32,7 @@ class ProxyRepo:
                     continue
                 except (aiohttp.ServerDisconnectedError, OSError) as server_os_error:
                     print(f'{scrape_info.proxy} {http_type.name} Server/OS Error: {server_os_error}')
-                    if attempt == self.max_retries:
+                    if attempt == self.__max_retries:
                         statistics.result_type = Response.ERROR
                         return statistics
                 except (aiohttp.ClientProxyConnectionError, Exception) as break_ex:
@@ -49,7 +49,7 @@ class ProxyRepo:
                 statistics.result_type = Response.SUCCESS
                 statistics.speed = int(sum(response_times) / len(response_times))
                 statistics.uptime = len(response_times)
-                statistics.access_type_id = self._check_access_type(response.headers) if self.get_access_type else scrape_info.access_type_id
+                statistics.access_type_id = self._check_access_type(response.headers) if self.__get_access_type else scrape_info.access_type_id
         return statistics
 
     async def ping_socks(self, socks_type, scrape_info):
@@ -57,9 +57,9 @@ class ProxyRepo:
         connector = ProxyConnector.from_url(f'{socks_type.name.lower()}://{scrape_info.proxy}')
         async with aiohttp.ClientSession(connector=connector) as client_session:
             response_times = []
-            for attempt in range(self.max_retries):
+            for attempt in range(self.__max_retries):
                 try:
-                    async with async_timeout.timeout(self.timeout):
+                    async with async_timeout.timeout(self.__timeout):
                         req_start_time = time.time()
                         async with client_session.get('http://example.com', allow_redirects=False) as response:
                             if response.status == 200 or response.status == 302:
@@ -71,7 +71,7 @@ class ProxyRepo:
                     continue
                 except (OSError, ProxyError) as error_ex:
                     print(f'{scrape_info.proxy} Error: {error_ex}')
-                    if attempt == self.max_retries:
+                    if attempt == self.__max_retries:
                         statistics.result_type = Response.ERROR
                         return statistics
                 except (aiohttp.ClientProxyConnectionError, Exception) as break_ex:
@@ -88,7 +88,7 @@ class ProxyRepo:
             statistics.result_type = Response.SUCCESS
             statistics.speed = int(sum(response_times) / len(response_times))
             statistics.uptime = len(response_times)
-            statistics.access_type_id = self._check_access_type(response.headers) if self.get_access_type else scrape_info.access_type_id
+            statistics.access_type_id = self._check_access_type(response.headers) if self.__get_access_type else scrape_info.access_type_id
 
         return statistics
 

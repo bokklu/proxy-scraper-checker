@@ -1,11 +1,9 @@
-from dataclasses import dataclass
-
-
-@dataclass
 class ScrapeInfo:
-    proxy: str
-    country_code: str = None
-    access_type_id: int = None
+
+    def __init__(self, proxy, country_code=None, access_type_id=None):
+        self.proxy = proxy
+        self.country_code = country_code
+        self.access_type_id = access_type_id
 
     def __hash__(self):
         return hash(self.proxy)
