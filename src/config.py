@@ -16,7 +16,7 @@ class Base:
 class DevelopmentConfig(Base):
     isdevelopment = True
     sql = dict(
-        host='localhost',
+        host='db',
         port='5432',
         database='proxydb',
         user='postgres',
