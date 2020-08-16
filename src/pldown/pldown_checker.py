@@ -47,6 +47,6 @@ class PldownChecker:
                      f'[Attempted HTTP: {len(http_scrape_info)} and HTTPS: {len(https_scrape_info)} and HTTP/S: {len(http_https_scrape_info)}] out of which [HTTP: {proxy_dict["http_count"]}] | [HTTPS: {proxy_dict["https_count"]}] | [HTTP/S: {proxy_dict["http_https_count"]}] || '
                      f'[Attempted SOCKS4: {len(socks4_scrape_info)} and SOCKS5: {len(socks5_scrape_info)} and SOCKS4/5: {len(socks4_socks5_scrape_info)}] out of which [SOCKS4: {proxy_dict["socks4_count"]}] | [SOCKS5: {proxy_dict["socks5_count"]}] | [SOCKS4/5: {proxy_dict["socks4_socks5_count"]}] ||')
 
-        isps, locations = self.__geo_repo.geo_resolve(proxy_dict["proxies"])
+        isps, locations, geo_filtered_proxies = self.__geo_repo.geo_resolve(proxy_dict["proxies"])
 
-        await self.__sql_repo.insert_proxies(isps, locations, proxy_dict["proxies"], Provider.PLDOWN)
+        await self.__sql_repo.insert_proxies(isps, locations, geo_filtered_proxies, Provider.PLDOWN)
