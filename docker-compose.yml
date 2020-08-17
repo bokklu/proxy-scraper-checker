@@ -5,10 +5,9 @@ services:
         image: postgres:latest
         container_name: postgres
         environment:
-          - POSTGRES_DB=${POSTGRES_DB}
-          - POSTGRES_USER=${POSTGRES_USER}
-          - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-          - PSC-SETTINGS=Development
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
         ports:
             - "5432:5432"
         volumes:
@@ -16,3 +15,5 @@ services:
     proxy-scraper:
         build: .
         container_name: proxy-scraper
+        environment:
+            - PSC-SETTINGS=Development
