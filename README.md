@@ -37,8 +37,8 @@ The proxies are then saved to an external PostgreSQL database.
 Environmental components (PostgreSQL) are Docker based. The docker-compose.yml file found in the root directory of the project should be used for local development.
 
 ### Development - Building the artifact
-- docker-compose up --build  [To build and run the python-scraper-checker locally]
-
+To build and run the python-scraper-checker locally:
+- docker-compose up --build
 ## Requirements:
 - Python **3.7** or higher
 - asyncio
