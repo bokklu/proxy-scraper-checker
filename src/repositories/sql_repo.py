@@ -1,17 +1,20 @@
 import asyncpg
 import json
 import logging
-from config import Config
 
 
 class SqlRepo:
+
+    def __init__(self, config):
+        self._config = config
 
     async def insert_proxies(self, isps, cities, proxies, provider):
         json_udts = self.convert_to_json(isps, cities, proxies)
 
         try:
-            conn = await asyncpg.connect(host=Config.settings.sql['host'], port=Config.settings.sql['port'], database=Config.settings.sql['database'],
-                                         user=Config.settings.sql['user'], password=Config.settings.sql['password'])
+            conn = await asyncpg.connect(host=self._config['sql']['host'], port=self._config['sql']['port'],
+                                         database=self._config['sql']['database'], user=self._config['sql']['user'],
+                                         password=self._config['sql']['password'])
 
             async with conn.transaction():
                 upsert_record = await conn.fetchval('SELECT fn_insert_proxies($1, $2, $3)', json_udts[0], json_udts[1], json_udts[2])

@@ -24,6 +24,5 @@ class ProxyHelper:
                                            access_type_id=t.access_type_id, type_id=t.type_id, speed=t.speed,
                                            uptime=t.uptime))
 
-        proxy_dict = {'proxies': proxy_records, 'http_count': http_c, 'https_count': https_c, 'http_https_count': http_https_c,
+        return {'proxies': proxy_records, 'http_count': http_c, 'https_count': https_c, 'http_https_count': http_https_c,
                       'socks4_count': socks4_c, 'socks5_count': socks5_c, 'socks4_socks5_count': socks4_socks5_c}
-        return proxy_dict

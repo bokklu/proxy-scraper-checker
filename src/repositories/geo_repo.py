@@ -2,21 +2,19 @@ from contracts.isp import Isp
 from contracts.city import City
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
-from config import Config
 
 
 class GeoRepo:
 
-    def __init__(self, get_country):
-        self.get_country = get_country
-        self.__city_db = Reader(Config.settings.geo_db['city_db'])
-        self.__asn_db = Reader(Config.settings.geo_db['asn_db'])
+    def __init__(self, config):
+        self._city_db = Reader(config['geo_db']['city_db'])
+        self._asn_db = Reader(config['geo_db']['asn_db'])
 
-    def __city_resolve(self, proxy):
+    def _city_resolve(self, get_country, proxy):
         try:
-            city_record = self.__city_db.city(proxy.address)
+            city_record = self._city_db.city(proxy.address)
 
-            if self.get_country: proxy.country_code = city_record.country.iso_code
+            if get_country: proxy.country_code = city_record.country.iso_code
 
             sub_division1 = sub_division1_code = sub_division2 = sub_division2_code = None
             subdivision_count = len(city_record.subdivisions)
@@ -38,9 +36,9 @@ class GeoRepo:
             print(f'{proxy.address} not found in CITY mmdb...')
             return None
 
-    def __isp_resolve(self, proxy):
+    def _isp_resolve(self, proxy):
         try:
-            isp_record = self.__asn_db.asn(proxy.address)
+            isp_record = self._asn_db.asn(proxy.address)
             isn_number = isp_record.autonomous_system_number
             proxy.isp_id = isn_number
 
@@ -52,15 +50,15 @@ class GeoRepo:
             print(f'{proxy.address} not found in ASN mmdb...')
             return None
 
-    def geo_resolve(self, proxies):
+    def geo_resolve(self, proxies, get_country):
         isps, cities, missing_proxies = set(), set(), set()
 
         for proxy in proxies:
 
-            isp_result = self.__isp_resolve(proxy)
+            isp_result = self._isp_resolve(proxy)
             isps.add(isp_result) if isp_result is not None else missing_proxies.add(proxy)
 
-            city_result = self.__city_resolve(proxy)
+            city_result = self._city_resolve(get_country, proxy)
             cities.add(city_result) if city_result is not None else missing_proxies.add(proxy)
 
         geo_filtered_proxies = list(proxies ^ missing_proxies)

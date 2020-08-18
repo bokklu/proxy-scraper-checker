@@ -1,7 +1,3 @@
-import os
-import logging
-
-
 class Base:
     isdevelopment = False
     isproduction = False
@@ -11,22 +7,30 @@ class Base:
     )
     proxyscrape_pool_amount = 2000
     pldown_pool_amount = 2000
+    max_retries = 3
+    timeout = 8
 
 
 class DevelopmentConfig(Base):
     isdevelopment = True
     sql = dict(
-        host='db',
+        host='localhost',
         port='5432',
         database='proxydb',
         user='postgres',
-        password='devpassword'
+        password='123'
     )
     geo_db = dict(
         city_db='/app/src/data/GeoLite2-City.mmdb',
         asn_db='/app/src/data/GeoLite2-ASN.mmdb'
     )
     proxyscrape_pool_amount = 500
+
+    def asdict(self):
+        return dict(isdevelopment=self.isdevelopment, isproduction=super().isproduction,
+                    provider_connections=super().provider_connections, sql=self.sql, geo_db=self.geo_db,
+                    proxyscrape_pool_amount=self.proxyscrape_pool_amount, pldown_pool_amount=super().pldown_pool_amount,
+                    max_retries=super().max_retries, timeout=super().timeout)
 
 
 class ProductionConfig(Base):
@@ -44,16 +48,8 @@ class ProductionConfig(Base):
         asn_db='/app/src/data/GeoLite2-ASN.mmdb'
     )
 
-
-class Config:
-    settings: Base
-
-    @classmethod
-    def set_config(cls):
-        try:
-            env = os.environ["PSC-SETTINGS"]
-        except KeyError:
-            logging.fatal('Environment variable not set!')
-            raise KeyError
-
-        cls.settings = DevelopmentConfig() if env == 'Development' else ProductionConfig()
+    def asdict(self):
+        return dict(isdevelopment=super().isdevelopment, isproduction=self.isproduction,
+                    provider_connections=super().provider_connections, sql=self.sql, geo_db=self.geo_db,
+                    proxyscrape_pool_amount=super().proxyscrape_pool_amount, pldown_pool_amount=super().pldown_pool_amount,
+                    max_retries=super().max_retries, timeout=super().timeout)

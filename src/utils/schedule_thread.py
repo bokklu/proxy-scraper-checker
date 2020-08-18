@@ -2,8 +2,7 @@ import threading
 import asyncio
 import sys
 import logging
-from scheduler import Scheduler
-from config import Config
+from containers import Scheduler
 
 
 class ScheduleThread(threading.Thread):
@@ -23,7 +22,5 @@ class ScheduleThread(threading.Thread):
         logging.info(f'Running on platform: {sys.platform}')
         asyncio.set_event_loop(loop)
 
-        Config.set_config()
-
-        scheduler = Scheduler()
+        scheduler = Scheduler.scheduler()
         scheduler.schedule_jobs(loop)
