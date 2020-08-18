@@ -8,6 +8,7 @@ from repositories.sql_repo import SqlRepo
 from repositories.geo_repo import GeoRepo
 from utils.task_pool import TaskPool
 from utils.proxy_helper import ProxyHelper
+from config import Config
 
 
 class PldownChecker:
@@ -33,7 +34,7 @@ class PldownChecker:
         socks4_scrape_info = provider_proxies[2] - provider_proxies[3]
         socks5_scrape_info = provider_proxies[3] - provider_proxies[2]
 
-        async with TaskPool(500) as tasks:
+        async with TaskPool(Config.settings.proxyscrape_pool_amount) as tasks:
             for scrape_info in http_https_scrape_info: await tasks.put(self.__proxy_repo.ping_multiple_http(scrape_info))
             for scrape_info in http_scrape_info: await tasks.put(self.__proxy_repo.ping_http(ProxyType.HTTP, scrape_info))
             for scrape_info in https_scrape_info: await tasks.put(self.__proxy_repo.ping_http(ProxyType.HTTPS, scrape_info))

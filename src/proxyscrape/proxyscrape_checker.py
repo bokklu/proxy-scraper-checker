@@ -8,6 +8,7 @@ from contracts.enums import ProxyType, Provider
 from proxyscrape.proxyscrape_scraper import ProxyScrapeScraper
 from utils.task_pool import TaskPool
 from utils.proxy_helper import ProxyHelper
+from config import Config
 
 
 class ProxyScrapeChecker:
@@ -27,7 +28,7 @@ class ProxyScrapeChecker:
 
         socks4_proxies = provider_proxies[1] - provider_proxies[2]
 
-        async with TaskPool(2000) as tasks:
+        async with TaskPool(Config.settings.proxyscrape_pool_amount) as tasks:
             for scrape_info in provider_proxies[0]: await tasks.put(self.__proxy_repo.ping_multiple_http(scrape_info))
             for scrape_info in socks4_proxies: await tasks.put(self.__proxy_repo.ping_socks(ProxyType.SOCKS4, scrape_info))
             for scrape_info in provider_proxies[2]: await tasks.put(self.__proxy_repo.ping_multiple_socks(scrape_info))
