@@ -1,6 +1,6 @@
 import time
 import logging
-from src.pldown.pldown_checker import PldownChecker
+from pldown.pldown_checker import PldownChecker
 
 
 class PldownRunner:

@@ -1,4 +1,4 @@
-from src.contracts.enums import Response
+from contracts.enums import Response
 
 
 class Statistics:

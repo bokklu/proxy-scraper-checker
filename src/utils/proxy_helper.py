@@ -1,5 +1,5 @@
-from src.contracts.enums import Response, ProxyType, Provider
-from src.contracts.proxy import Proxy
+from contracts.enums import Response, ProxyType, Provider
+from contracts.proxy import Proxy
 
 
 class ProxyHelper:

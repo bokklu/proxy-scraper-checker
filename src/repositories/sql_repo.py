@@ -1,7 +1,7 @@
 import asyncpg
 import json
 import logging
-from src.config import Config
+from config import Config
 
 
 class SqlRepo:

@@ -1,9 +1,9 @@
 import asyncio
 import async_timeout
 import logging
-from src.contracts.enums import ProxyAccessType
-from src.contracts.scrape_info import ScrapeInfo
-from src.config import Config
+from contracts.enums import ProxyAccessType
+from contracts.scrape_info import ScrapeInfo
+from config import Config
 
 
 class PldownScraper:

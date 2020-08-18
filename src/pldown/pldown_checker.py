@@ -1,13 +1,13 @@
 import asyncio
 import logging
 from aiohttp import ClientSession
-from src.contracts.enums import ProxyType, Provider
-from src.pldown.pldown_scraper import PldownScraper
-from src.repositories.proxy_repo import ProxyRepo
-from src.repositories.sql_repo import SqlRepo
-from src.repositories.geo_repo import GeoRepo
-from src.utils.task_pool import TaskPool
-from src.utils.proxy_helper import ProxyHelper
+from contracts.enums import ProxyType, Provider
+from pldown.pldown_scraper import PldownScraper
+from repositories.proxy_repo import ProxyRepo
+from repositories.sql_repo import SqlRepo
+from repositories.geo_repo import GeoRepo
+from utils.task_pool import TaskPool
+from utils.proxy_helper import ProxyHelper
 
 
 class PldownChecker:

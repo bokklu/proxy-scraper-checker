@@ -1,8 +1,8 @@
 import asyncio
 import logging
 import async_timeout
-from src.contracts.scrape_info import ScrapeInfo
-from src.config import Config
+from contracts.scrape_info import ScrapeInfo
+from config import Config
 
 
 class ProxyScrapeScraper:

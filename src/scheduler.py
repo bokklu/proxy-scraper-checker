@@ -1,8 +1,8 @@
 import schedule
 import time
 import logging
-from src.pldown.pldown_runner import PldownRunner
-from src.proxyscrape.proxyscape_runner import ProxyScrapeRunner
+from pldown.pldown_runner import PldownRunner
+from proxyscrape.proxyscape_runner import ProxyScrapeRunner
 
 
 class Scheduler:

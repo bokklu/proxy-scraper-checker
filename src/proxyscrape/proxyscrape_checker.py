@@ -1,13 +1,13 @@
 import asyncio
 import logging
 from aiohttp import ClientSession
-from src.repositories.geo_repo import GeoRepo
-from src.repositories.sql_repo import SqlRepo
-from src.repositories.proxy_repo import ProxyRepo
-from src.contracts.enums import ProxyType, Provider
-from src.proxyscrape.proxyscrape_scraper import ProxyScrapeScraper
-from src.utils.task_pool import TaskPool
-from src.utils.proxy_helper import ProxyHelper
+from repositories.geo_repo import GeoRepo
+from repositories.sql_repo import SqlRepo
+from repositories.proxy_repo import ProxyRepo
+from contracts.enums import ProxyType, Provider
+from proxyscrape.proxyscrape_scraper import ProxyScrapeScraper
+from utils.task_pool import TaskPool
+from utils.proxy_helper import ProxyHelper
 
 
 class ProxyScrapeChecker:

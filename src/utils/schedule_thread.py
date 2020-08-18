@@ -2,8 +2,8 @@ import threading
 import asyncio
 import sys
 import logging
-from src.scheduler import Scheduler
-from src.config import Config
+from scheduler import Scheduler
+from config import Config
 
 
 class ScheduleThread(threading.Thread):

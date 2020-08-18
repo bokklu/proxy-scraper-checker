@@ -3,8 +3,8 @@ import async_timeout
 import aiohttp
 import time
 from aiohttp_socks import ProxyConnector, ProxyError
-from src.contracts.statistics import Statistics
-from src.contracts.enums import Response, ProxyAccessType, ProxyType
+from contracts.statistics import Statistics
+from contracts.enums import Response, ProxyAccessType, ProxyType
 
 
 class ProxyRepo:

@@ -1,8 +1,8 @@
-from src.contracts.isp import Isp
-from src.contracts.city import City
+from contracts.isp import Isp
+from contracts.city import City
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
-from src.config import Config
+from config import Config
 
 
 class GeoRepo:

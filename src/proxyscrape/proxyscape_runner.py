@@ -1,6 +1,6 @@
 import time
 import logging
-from src.proxyscrape.proxyscrape_checker import ProxyScrapeChecker
+from proxyscrape.proxyscrape_checker import ProxyScrapeChecker
 
 
 class ProxyScrapeRunner:

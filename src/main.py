@@ -1,6 +1,6 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
-from src.utils.schedule_thread import ScheduleThread
+from utils.schedule_thread import ScheduleThread
 
 if __name__ == "__main__":
     logging.raiseExceptions = False
