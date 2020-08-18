@@ -24,10 +24,12 @@ class ProxyScrapeChecker:
 
         socks4_proxies = provider_proxies[1] - provider_proxies[2]
 
+        self._proxy_repo.get_access_type = True
+
         async with TaskPool(self._config['proxyscrape_pool_amount']) as tasks:
-            for scrape_info in provider_proxies[0]: await tasks.put(self._proxy_repo.ping_multiple_http(scrape_info, get_access_type=True))
+            for scrape_info in provider_proxies[0]: await tasks.put(self._proxy_repo.ping_multiple_http(scrape_info))
             for scrape_info in socks4_proxies: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS4, scrape_info))
-            for scrape_info in provider_proxies[2]: await tasks.put(self._proxy_repo.ping_multiple_socks(scrape_info, get_access_type=True))
+            for scrape_info in provider_proxies[2]: await tasks.put(self._proxy_repo.ping_multiple_socks(scrape_info))
 
         proxy_dict = ProxyHelper.create_and_get_proxy_stats(tasks.results)
 

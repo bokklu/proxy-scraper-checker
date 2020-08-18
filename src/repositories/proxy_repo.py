@@ -12,8 +12,9 @@ class ProxyRepo:
     def __init__(self, config):
         self._timeout = config['timeout']
         self._max_retries = config['max_retries']
+        self.get_access_type = False
 
-    async def ping_http(self, http_type, scrape_info, get_access_type):
+    async def ping_http(self, http_type, scrape_info):
         statistics = Statistics(type_id=http_type.value)
         async with aiohttp.ClientSession() as session:
             response_times = []
@@ -48,10 +49,10 @@ class ProxyRepo:
                 statistics.result_type = Response.SUCCESS
                 statistics.speed = int(sum(response_times) / len(response_times))
                 statistics.uptime = len(response_times)
-                statistics.access_type_id = self._check_access_type(response.headers) if get_access_type else scrape_info.access_type_id
+                statistics.access_type_id = self._check_access_type(response.headers) if self.get_access_type else scrape_info.access_type_id
         return statistics
 
-    async def ping_socks(self, socks_type, scrape_info, get_access_type):
+    async def ping_socks(self, socks_type, scrape_info):
         statistics = Statistics(type_id=socks_type.value)
         connector = ProxyConnector.from_url(f'{socks_type.name.lower()}://{scrape_info.proxy}')
         async with aiohttp.ClientSession(connector=connector) as client_session:
@@ -87,13 +88,13 @@ class ProxyRepo:
             statistics.result_type = Response.SUCCESS
             statistics.speed = int(sum(response_times) / len(response_times))
             statistics.uptime = len(response_times)
-            statistics.access_type_id = self._check_access_type(response.headers) if get_access_type else scrape_info.access_type_id
+            statistics.access_type_id = self._check_access_type(response.headers) if self.get_access_type else scrape_info.access_type_id
 
         return statistics
 
-    async def ping_multiple_http(self, scrape_info, get_access_type):
-        http_task = asyncio.create_task(self.ping_http(ProxyType.HTTP, scrape_info, get_access_type))
-        https_task = asyncio.create_task(self.ping_http(ProxyType.HTTPS, scrape_info, get_access_type))
+    async def ping_multiple_http(self, scrape_info):
+        http_task = asyncio.create_task(self.ping_http(ProxyType.HTTP, scrape_info))
+        https_task = asyncio.create_task(self.ping_http(ProxyType.HTTPS, scrape_info))
         results = await asyncio.gather(http_task, https_task)
 
         if results[0].result_type is Response.SUCCESS and results[1].result_type is Response.SUCCESS:
@@ -106,9 +107,9 @@ class ProxyRepo:
         else:
             return results[0]
 
-    async def ping_multiple_socks(self, scrape_info, get_access_type):
-        socks4_task = asyncio.create_task(self.ping_socks(ProxyType.SOCKS4, scrape_info, get_access_type))
-        socks5_task = asyncio.create_task(self.ping_socks(ProxyType.SOCKS5, scrape_info, get_access_type))
+    async def ping_multiple_socks(self, scrape_info):
+        socks4_task = asyncio.create_task(self.ping_socks(ProxyType.SOCKS4, scrape_info))
+        socks5_task = asyncio.create_task(self.ping_socks(ProxyType.SOCKS5, scrape_info))
         results = await asyncio.gather(socks4_task, socks5_task)
 
         if results[0].result_type is Response.SUCCESS and results[1].result_type is Response.SUCCESS:

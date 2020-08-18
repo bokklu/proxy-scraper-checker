@@ -31,10 +31,10 @@ class PldownChecker:
         socks5_scrape_info = provider_proxies[3] - provider_proxies[2]
 
         async with TaskPool(self._config['proxyscrape_pool_amount']) as tasks:
-            for scrape_info in http_https_scrape_info: await tasks.put(self._proxy_repo.ping_multiple_http(scrape_info, get_access_type=False))
+            for scrape_info in http_https_scrape_info: await tasks.put(self._proxy_repo.ping_multiple_http(scrape_info))
             for scrape_info in http_scrape_info: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTP, scrape_info))
             for scrape_info in https_scrape_info: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTPS, scrape_info))
-            for scrape_info in socks4_socks5_scrape_info: await tasks.put(self._proxy_repo.ping_multiple_socks(scrape_info, get_access_type=False))
+            for scrape_info in socks4_socks5_scrape_info: await tasks.put(self._proxy_repo.ping_multiple_socks(scrape_info))
             for scrape_info in socks4_scrape_info: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS4, scrape_info))
             for scrape_info in socks5_scrape_info: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS5, scrape_info))
 
