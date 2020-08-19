@@ -18,7 +18,7 @@ class DevelopmentConfig(Base):
         port='5432',
         database='proxydb',
         user='postgres',
-        password='123'
+        password='devpassword'
     )
     geo_db = dict(
         city_db='/app/src/data/GeoLite2-City.mmdb',
