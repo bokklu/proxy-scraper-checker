@@ -40,7 +40,7 @@ CREATE TABLE city
 	proxy_address varchar(15) PRIMARY KEY NOT NULL,
 	latitude decimal,
 	longitude decimal,
-	city_name varchar(100),
+	name varchar(100),
 	sub_division1 varchar(100),
 	sub_division1_code varchar(3),
 	sub_division2 varchar(100),
@@ -359,7 +359,7 @@ CREATE TYPE udt_city AS
 	proxy_address varchar(15),
 	latitude decimal,
 	longitude decimal,
-	city_name varchar(100),
+	name varchar(100),
 	sub_division1 varchar(100),
 	sub_division1_code varchar(3),
 	sub_division2 varchar(100),
@@ -382,37 +382,76 @@ CREATE TYPE udt_proxy AS
 	uptime smallint
 );
 
-CREATE TYPE udt_count AS
+CREATE TYPE udt_insert_count AS
 (
-	insert_count int,
-	update_count int
+	insert_proxy_count int,
+	insert_city_count int,
+	insert_isp_count int,
+	update_proxy_count int
+);
+
+CREATE TYPE udt_cleanup_count AS
+(
+	proxy_count int,
+	city_count int,
+	isp_count int
 );
 
 CREATE OR REPLACE FUNCTION fn_insert_proxies(isps json, cities json, proxies json)
-RETURNS udt_count AS $func$
-DECLARE result_count udt_count;
+RETURNS udt_insert_count AS $func$
+DECLARE result_count udt_insert_count;
 BEGIN
-	INSERT INTO isp (id, name)
-	SELECT * FROM json_populate_recordset(null::udt_isp, isps) as udt_isps
-	ON CONFLICT (id)
-	DO NOTHING;
+	WITH isp_count AS
+    (
+        INSERT INTO isp (id, name)
+        SELECT * FROM json_populate_recordset(null::udt_isp, isps) as udt_isps
+        ON CONFLICT (id)
+        DO NOTHING RETURNING xmax
+    )
+    SELECT COUNT(*) FILTER (WHERE xmax = 0)
+    INTO result_count.insert_isp_count
+    FROM isp_count;
+
+	WITH city_count AS
+    (
+        INSERT INTO city (proxy_address, latitude, longitude, name, sub_division1, sub_division1_code, sub_division2, sub_division2_code, postal_code, accuracy_radius, timezone)
+        SELECT * FROM json_populate_recordset(null::udt_city, cities)
+        ON CONFLICT (proxy_address)
+        DO NOTHING RETURNING xmax
+    )
+    SELECT COUNT(*) FILTER (WHERE xmax = 0)
+    INTO result_count.insert_city_count
+    FROM city_count;
+
+    WITH proxy_count AS
+    (
+        INSERT INTO proxy as p (address, port, country_code, type_id, access_type_id, provider_id, isp_id, speed, uptime, created_date, modified_date)
+        SELECT *, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM json_populate_recordset(null::udt_proxy, proxies)
+        ON CONFLICT ON CONSTRAINT proxy_address_port_uc
+        DO UPDATE SET speed = p.speed, uptime = p.uptime, modified_date = CURRENT_TIMESTAMP RETURNING xmax
+    )
+    SELECT COUNT(*) FILTER (WHERE xmax = 0),
+           COUNT(*) FILTER (WHERE xmax::text::int > 0)
+    INTO result_count.insert_proxy_count, result_count.update_proxy_count
+    FROM proxy_count;
+
+    RETURN result_count;
+END
+$func$  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fn_cleanup_proxies()
+RETURNS udt_cleanup_count AS $func$
+DECLARE result_count udt_cleanup_count;
+BEGIN
+	WITH old_proxies AS (SELECT id, address, isp_id FROM proxy WHERE modified_date < NOW() - INTERVAL '7 days'),
+	old_proxies_city AS (SELECT address FROM old_proxies WHERE address NOT IN (SELECT address FROM proxy WHERE modified_date > NOW() - INTERVAL '7 days')),
+	old_proxies_isp AS (SELECT isp_id, count(*) FROM old_proxies WHERE isp_id NOT IN (SELECT isp_id FROM proxy WHERE modified_date > NOW() - INTERVAL '7 days')),
+	deleted_isp AS (DELETE FROM isp WHERE id IN (SELECT * FROM old_proxies_isp) RETURNING *),
+	deleted_city AS (DELETE FROM city WHERE proxy_address IN (SELECT * FROM old_proxies_city) RETURNING *),
+	deleted_proxy AS (DELETE FROM proxy WHERE id IN (SELECT id FROM old_proxies) RETURNING *)
 	
-	INSERT INTO city (proxy_address, latitude, longitude, city_name, sub_division1, sub_division1_code, sub_division2, sub_division2_code, postal_code, accuracy_radius, timezone)
-	SELECT * FROM json_populate_recordset(null::udt_city, cities)
-	ON CONFLICT (proxy_address)
-	DO NOTHING;
-	
-	WITH t AS
-	(
-		INSERT INTO proxy as p (address, port, country_code, type_id, access_type_id, provider_id, isp_id, speed, uptime, created_date, modified_date)
-		SELECT *, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM json_populate_recordset(null::udt_proxy, proxies)
-		ON CONFLICT ON CONSTRAINT proxy_address_port_uc
-		DO UPDATE SET speed = p.speed, uptime = p.uptime, modified_date = CURRENT_TIMESTAMP RETURNING xmax
-	)
-	
-	SELECT SUM(CASE WHEN xmax = 0 THEN 1 ELSE 0 END), SUM(CASE WHEN xmax::text::int > 0 THEN 1 ELSE 0 END)
-	INTO result_count.insert_count, result_count.update_count
-	FROM t;
+	SELECT (SELECT count(*) FROM deleted_proxy), (SELECT count(*) FROM deleted_city), (SELECT count(*) FROM deleted_isp)
+	INTO result_count.proxy_count, result_count.city_count, result_count.isp_count;
 	
 	RETURN result_count;
 END
