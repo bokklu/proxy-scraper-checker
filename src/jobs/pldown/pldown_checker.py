@@ -38,7 +38,7 @@ class PldownChecker:
             for scrape_info in socks4_scrape_info: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS4, scrape_info))
             for scrape_info in socks5_scrape_info: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS5, scrape_info))
 
-        proxy_dict = ProxyHelper.create_and_get_proxy_stats(tasks.results)
+        proxy_dict = ProxyHelper.create_and_get_proxy_stats(tasks.results, Provider.PLDOWN.value)
 
         logging.info(f'Successful: {len(proxy_dict["proxies"])}/{len(tasks.results)} || '
                      f'[Attempted HTTP: {len(http_scrape_info)} and HTTPS: {len(https_scrape_info)} and HTTP/S: {len(http_https_scrape_info)}] out of which [HTTP: {proxy_dict["http_count"]}] | [HTTPS: {proxy_dict["https_count"]}] | [HTTP/S: {proxy_dict["http_https_count"]}] || '

@@ -31,7 +31,7 @@ class ProxyScrapeChecker:
             for scrape_info in socks4_proxies: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS4, scrape_info))
             for scrape_info in provider_proxies[2]: await tasks.put(self._proxy_repo.ping_multiple_socks(scrape_info))
 
-        proxy_dict = ProxyHelper.create_and_get_proxy_stats(tasks.results)
+        proxy_dict = ProxyHelper.create_and_get_proxy_stats(tasks.results, Provider.PROXYSCRAPE.value)
 
         logging.info(f'Successful Proxies: {len(proxy_dict["proxies"])}/{len(tasks.results)} || '
                      f'[Attempted HTTP/S: {len(provider_proxies[0])}] out of which [HTTP: {proxy_dict["http_count"]}] | [HTTPS: {proxy_dict["https_count"]}] | [HTTP/S: {proxy_dict["http_https_count"]}] || '

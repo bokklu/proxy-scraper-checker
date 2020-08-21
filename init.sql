@@ -439,20 +439,34 @@ BEGIN
 END
 $func$  LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION fn_cleanup_proxies()
+CREATE OR REPLACE FUNCTION fn_get_cleanup_proxies(cleanup_range integer)
+RETURNS TABLE (address varchar(15),
+			   port int,
+			   type smallint) AS
+$func$
+BEGIN
+	RETURN QUERY
+	SELECT p.address, p.port, p.type_id
+	FROM proxy as p
+	WHERE modified_date < NOW() - INTERVAL '1 days' * cleanup_range;
+END
+$func$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fn_cleanup_proxies(cleanup_range integer, proxies json)
 RETURNS udt_cleanup_count AS $func$
 DECLARE result_count udt_cleanup_count;
 BEGIN
-	WITH old_proxies AS (SELECT id, address, isp_id FROM proxy WHERE modified_date < NOW() - INTERVAL '7 days'),
-	old_proxies_city AS (SELECT address FROM old_proxies WHERE address NOT IN (SELECT address FROM proxy WHERE modified_date > NOW() - INTERVAL '7 days')),
-	old_proxies_isp AS (SELECT isp_id, count(*) FROM old_proxies WHERE isp_id NOT IN (SELECT isp_id FROM proxy WHERE modified_date > NOW() - INTERVAL '7 days')),
-	deleted_isp AS (DELETE FROM isp WHERE id IN (SELECT * FROM old_proxies_isp) RETURNING *),
-	deleted_city AS (DELETE FROM city WHERE proxy_address IN (SELECT * FROM old_proxies_city) RETURNING *),
-	deleted_proxy AS (DELETE FROM proxy WHERE id IN (SELECT id FROM old_proxies) RETURNING *)
-	
-	SELECT (SELECT count(*) FROM deleted_proxy), (SELECT count(*) FROM deleted_city), (SELECT count(*) FROM deleted_isp)
-	INTO result_count.proxy_count, result_count.city_count, result_count.isp_count;
-	
-	RETURN result_count;
+    WITH input_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, proxies)),
+    old_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy AS p INNER JOIN input_proxies AS i ON p.address = i.address AND p.port = i.port AND p.type_id = i.type_id),
+    old_proxies_city AS (SELECT address FROM old_proxies WHERE address NOT IN (SELECT address FROM proxy WHERE modified_date > NOW() - INTERVAL '1 days' * cleanup_range)),
+    old_proxies_isp AS (SELECT isp_id FROM old_proxies WHERE isp_id NOT IN (SELECT isp_id FROM proxy WHERE modified_date > NOW() - INTERVAL '1 days' * cleanup_range)),
+    deleted_proxy AS (DELETE FROM proxy WHERE id IN (SELECT id FROM old_proxies) RETURNING *),
+    deleted_isp AS (DELETE FROM isp WHERE id IN (SELECT * FROM old_proxies_isp) RETURNING *),
+    deleted_city AS (DELETE FROM city WHERE proxy_address IN (SELECT * FROM old_proxies_city) RETURNING *)
+
+    SELECT (SELECT count(*) FROM deleted_proxy), (SELECT count(*) FROM deleted_city), (SELECT count(*) FROM deleted_isp)
+    INTO result_count.proxy_count, result_count.city_count, result_count.isp_count;
+
+    RETURN result_count;
 END
 $func$  LANGUAGE plpgsql;

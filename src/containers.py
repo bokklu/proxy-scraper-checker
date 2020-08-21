@@ -8,6 +8,8 @@ from jobs.pldown.pldown_checker import PldownChecker
 from jobs.proxyscrape.proxyscrape_scraper import ProxyScrapeScraper
 from jobs.proxyscrape.proxyscape_runner import ProxyScrapeRunner
 from jobs.proxyscrape.proxyscrape_checker import ProxyScrapeChecker
+from jobs.cleanup.cleanup_checker import CleanupChecker
+from jobs.cleanup.cleanup_runner import CleanupRunner
 from scheduler import Scheduler
 
 
@@ -29,12 +31,14 @@ class Scrapers(containers.DeclarativeContainer):
 class Checkers(containers.DeclarativeContainer):
     pldown_checker = providers.Singleton(PldownChecker, config=Configs.config, geo_repo=Repos.geo_repo, proxy_repo=Repos.proxy_repo, sql_repo=Repos.sql_repo, pldown_scraper=Scrapers.pldown_scraper)
     proxyscrape_checker = providers.Singleton(ProxyScrapeChecker, config=Configs.config, geo_repo=Repos.geo_repo, proxy_repo=Repos.proxy_repo, sql_repo=Repos.sql_repo, proxyscrape_scraper=Scrapers.proxyscrape_scraper)
+    cleanup_checker = providers.Singleton(CleanupChecker, config=Configs.config, sql_repo=Repos.sql_repo, proxy_repo=Repos.proxy_repo)
 
 
 class Runners(containers.DeclarativeContainer):
     pldown_runner = providers.Singleton(PldownRunner, pldown_checker=Checkers.pldown_checker)
     proxyscrape_runner = providers.Singleton(ProxyScrapeRunner, proxyscrape_checker=Checkers.proxyscrape_checker)
+    cleanup_runner = providers.Singleton(CleanupRunner, cleanup_checker=Checkers.cleanup_checker)
 
 
 class Scheduler(containers.DeclarativeContainer):
-    scheduler = providers.Singleton(Scheduler, pldown_runner=Runners.pldown_runner, proxyscrape_runner=Runners.proxyscrape_runner)
+    scheduler = providers.Singleton(Scheduler, pldown_runner=Runners.pldown_runner, proxyscrape_runner=Runners.proxyscrape_runner, cleanup_runner=Runners.cleanup_runner)

@@ -9,15 +9,15 @@ class SqlRepo:
         self._config = config
 
     async def insert_proxies(self, isps, cities, proxies, provider):
-        json_udts = self.convert_to_json(isps, cities, proxies)
+        json_isps = json.dumps([isp.__dict__ for isp in isps])
+        json_cities = json.dumps([city.__dict__ for city in cities])
+        json_proxies = json.dumps([proxy.__dict__ for proxy in proxies])
 
         try:
-            conn = await asyncpg.connect(host=self._config['sql']['host'], port=self._config['sql']['port'],
-                                         database=self._config['sql']['database'], user=self._config['sql']['user'],
-                                         password=self._config['sql']['password'])
+            conn = await self._connect()
 
             async with conn.transaction():
-                insert_counts = await conn.fetchval('SELECT fn_insert_proxies($1, $2, $3)', json_udts[0], json_udts[1], json_udts[2])
+                insert_counts = await conn.fetchval('SELECT fn_insert_proxies($1, $2, $3)', json_isps, json_cities, json_proxies)
 
             await conn.close()
 
@@ -29,27 +29,40 @@ class SqlRepo:
         except Exception as ex:
             logging.error(f'{self.insert_proxies.__name__} for Provider: {provider.name}, failed with ex: {str(ex)}')
 
-    async def cleanup_proxies(self):
+    async def get_cleanup_proxies(self):
         try:
-            conn = await asyncpg.connect(host=self._config['sql']['host'], port=self._config['sql']['port'],
-                                         database=self._config['sql']['database'], user=self._config['sql']['user'],
-                                         password=self._config['sql']['password'])
+            conn = await self._connect()
 
-            async with conn.transaction():
-                deleted_records = await conn.fetchval('SELECT fn_cleanup_proxies()')
+            cleanup_proxies = await conn.fetch('SELECT fn_get_cleanup_proxies($1)', self._config['cleanup_day_range'])
 
             await conn.close()
 
-            logging.info(f'{self.cleanup_proxies.__name__}, cleaned up {deleted_records["proxy_count"]} proxy rows, '
-                         f'{deleted_records["city_count"]} city rows, {deleted_records["isp_count"]} isp rows.')
+            logging.info(f'{self.get_cleanup_proxies.__name__} got {len(cleanup_proxies)} with cleanup-range of {self._config["cleanup_day_range"]} days')
+
+            return cleanup_proxies
+
+        except Exception as ex:
+            logging.error(f'{self.get_cleanup_proxies.__name__}, failed with ex: {str(ex)}')
+
+    async def cleanup_proxies(self, proxies):
+        json_proxies = json.dumps([proxy.__dict__ for proxy in proxies])
+
+        try:
+            conn = await self._connect()
+
+            async with conn.transaction():
+                cleanup_count = await conn.fetchval('SELECT fn_cleanup_proxies($1, $2)', self._config['cleanup_day_range'], json_proxies)
+
+            await conn.close()
+
+            logging.info(f'{self.cleanup_proxies.__name__}, cleaned up {cleanup_count["proxy_count"]} proxy rows, '
+                         f'{cleanup_count["city_count"]} city rows, {cleanup_count["isp_count"]} isp rows.')
 
         except Exception as ex:
             logging.error(f'{self.cleanup_proxies.__name__}, failed with ex: {str(ex)}')
 
-    @staticmethod
-    def convert_to_json(isps, cities, proxies):
-        json_isps = json.dumps([isp.__dict__ for isp in isps])
-        json_cities = json.dumps([city.__dict__ for city in cities])
-        json_proxies = json.dumps([proxy.__dict__ for proxy in proxies])
+    def _connect(self):
+        return asyncpg.connect(host=self._config['sql']['host'], port=self._config['sql']['port'],
+                               database=self._config['sql']['database'], user=self._config['sql']['user'],
+                               password=self._config['sql']['password'])
 
-        return json_isps, json_cities, json_proxies
