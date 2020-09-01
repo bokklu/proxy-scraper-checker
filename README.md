@@ -42,6 +42,10 @@ To build and run the python-scraper-checker locally:
 ### Ports used:
 - PostgeSQL: **5432**
 
+### Environment Variables used:
+- PSC_SETTINGS  [Development or Production]
+- PSC_DBPASSWORD [Database Password]
+
 ## Requirements:
 - Python **3.7** or higher
 - asyncio
