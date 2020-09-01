@@ -44,7 +44,7 @@ To build and run the python-scraper-checker locally:
 
 ### Environment Variables used:
 - PSC_SETTINGS  [Development or Production]
-- PSC_DBPASSWORD [Database Password]
+- PSC_DBPASSWORD [Production database password]
 
 ## Requirements:
 - Python **3.7** or higher
