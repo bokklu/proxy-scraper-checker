@@ -9,7 +9,7 @@ class Base:
     pldown_pool_amount = 2000
     max_retries = 3
     timeout = 8
-    cleanup_day_range = 7
+    cleanup_day_range = 6
     cleanup_pool_amount = 500
 
 
