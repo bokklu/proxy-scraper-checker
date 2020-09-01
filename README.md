@@ -53,4 +53,8 @@ To build and run the python-scraper-checker locally:
 - aiohttp-socks
 - asyncpg
 - schedule
+- aenum
+- recordclass
+- geoip2
 - uvloop
+- dependency-injector
