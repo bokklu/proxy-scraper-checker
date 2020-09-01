@@ -12,12 +12,19 @@ if __name__ == "__main__":
                         handlers=[TimedRotatingFileHandler("log-file.log", when="D", interval=7, backupCount=0), logging.StreamHandler()])
 
     try:
-        env = os.environ["PSC-SETTINGS"]
+        env = os.environ["PSC_SETTINGS"]
+
+        if env == 'Development':
+            config = DevelopmentConfig()
+        else:
+            db_pass = os.environ["PSC_DBPASSWORD"]
+            config = ProductionConfig()
+            config.sql['password'] = db_pass
+
     except KeyError as key_error:
         logging.fatal('Environment variable not set!')
         raise key_error
 
-    config = DevelopmentConfig() if env == 'Development' else ProductionConfig()
     Configs.config.override(config.asdict())
 
     schedule_thread = ScheduleThread()

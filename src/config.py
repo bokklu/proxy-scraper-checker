@@ -40,11 +40,10 @@ class ProductionConfig(Base):
     isproduction = True
     #change to PROD db url
     sql = dict(
-        host='localhost',
+        host='DEV-3PCVDUB',
         port='5432',
         database='proxydb',
-        user='postgres',
-        password='devpassword'
+        user='postgres'
     )
     geo_db = dict(
         city_db='/app/src/data/GeoLite2-City.mmdb',
