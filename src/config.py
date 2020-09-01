@@ -38,7 +38,6 @@ class DevelopmentConfig(Base):
 
 class ProductionConfig(Base):
     isproduction = True
-    #change to PROD db url
     sql = dict(
         host='DEV-3PCVDUB',
         port='5432',
