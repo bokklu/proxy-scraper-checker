@@ -45,8 +45,8 @@ class ProductionConfig(Base):
         user='postgres'
     )
     geo_db = dict(
-        city_db='/app/src/data/GeoLite2-City.mmdb',
-        asn_db='/app/src/data/GeoLite2-ASN.mmdb'
+        city_db='/home/ubuntu/proxy-scraper-checker/src/data/GeoLite2-City.mmdb',
+        asn_db='/home/ubuntu/proxy-scraper-checker/src/data/GeoLite2-ASN.mmdb'
     )
 
     def asdict(self):
