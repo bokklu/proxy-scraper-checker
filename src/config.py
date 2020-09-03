@@ -48,10 +48,12 @@ class ProductionConfig(Base):
         city_db='/home/ubuntu/proxy-scraper-checker/src/data/GeoLite2-City.mmdb',
         asn_db='/home/ubuntu/proxy-scraper-checker/src/data/GeoLite2-ASN.mmdb'
     )
-
+    proxyscrape_pool_amount = 250
+    pldown_pool_amount = 250
+    
     def asdict(self):
         return dict(isdevelopment=super().isdevelopment, isproduction=self.isproduction,
                     provider_connections=super().provider_connections, sql=self.sql, geo_db=self.geo_db,
-                    proxyscrape_pool_amount=super().proxyscrape_pool_amount, pldown_pool_amount=super().pldown_pool_amount,
+                    proxyscrape_pool_amount=self.proxyscrape_pool_amount, pldown_pool_amount=self.pldown_pool_amount,
                     max_retries=super().max_retries, timeout=super().timeout, cleanup_day_range=super().cleanup_day_range,
                     cleanup_pool_amount=super().cleanup_pool_amount)
