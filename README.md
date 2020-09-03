@@ -39,6 +39,9 @@ Environmental components (PostgreSQL) are Docker based. The docker-compose.yml f
 To build and run the python-scraper-checker locally:
 - docker-compose up --build
 
+To run the python-scraper-checker directly from python:
+- python main.py
+
 ### Ports used:
 - PostgeSQL: **5432**
 
