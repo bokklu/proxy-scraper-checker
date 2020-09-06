@@ -16,4 +16,5 @@ services:
         build: .
         container_name: proxy-scraper
         environment:
-            - PSC-SETTINGS=Development
+            - PSC_SETTINGS=Development
+            - PSC_DBPASSWORD=${POSTGRES_PASSWORD}
