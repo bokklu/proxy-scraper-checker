@@ -50,13 +50,13 @@ In order to make it easier to manage and keep all environment variables together
 
 #### Proxy-Scraper-Checker Environment Variables:
 - PSC_SETTINGS  [Development or Production]
-- PSC_DBPASSWORD [Production database password]
+- PSC_DBPASSWORD [Database password]
 
 ##### Component Dependencies:
 #### PostgreSQL Container Environment Variables:
 - POSTGRES_DB [Database name]
 - POSTGRES_USER [Database user]
-- POSTGRES_PASSWORD [Database user password]
+- POSTGRES_PASSWORD [Database password]
 - POSTGRES_ENVIRONMENT [Development or Production]
 
 
