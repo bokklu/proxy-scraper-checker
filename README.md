@@ -48,14 +48,17 @@ To run the python-scraper-checker directly from python:
 ### Environment Variables used:
 In order to make it easier to manage and keep all environment variables together, create a **.env** file in the root project directory and populate it with the environment variables listed below. This file should be left out when committing, as it might contain sensitive information.
 
+#### Proxy-Scraper-Checker Environment Variables:
+- PSC_SETTINGS  [Development or Production]
+- PSC_DBPASSWORD [Production database password]
+
+##### Component Dependencies:
 #### PostgreSQL Container Environment Variables:
 - POSTGRES_DB [Database name]
 - POSTGRES_USER [Database user]
 - POSTGRES_PASSWORD [Database user password]
 - POSTGRES_ENVIRONMENT [Development or Production]
-#### Proxy-Scraper-Checker Environment Variables:
-- PSC_SETTINGS  [Development or Production]
-- PSC_DBPASSWORD [Production database password]
+
 
 ## Requirements:
 - Python **3.7** or higher
