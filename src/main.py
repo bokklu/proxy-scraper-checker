@@ -12,7 +12,7 @@ if __name__ == "__main__":
                         handlers=[TimedRotatingFileHandler("log-file.log", when="D", interval=7, backupCount=0), logging.StreamHandler()])
 
     try:
-        env = os.environ["PSC_SETTINGS"]
+        env = os.environ["PSC_ENVIRONMENT"]
 
         if env == 'Development':
             config = DevelopmentConfig()
