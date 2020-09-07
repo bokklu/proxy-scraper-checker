@@ -34,7 +34,7 @@ The Proxy Location information entails the following properties:
 The proxies are then saved to an external PostgreSQL database.
 
 ## Environment:
-Environmental components (PostgreSQL) are Docker based. The docker-compose.yml file found in the root directory of the project makes it easier for local development as it runs the dependent components in containers, however it can also be used for production environment.
+Environmental components (PostgreSQL) are Docker based. The docker-compose.yml file found in the root directory of the project makes it easier for local development as it runs the dependent components in containers.
 
 To build and run the python-scraper-checker locally:
 - docker-compose up --build
