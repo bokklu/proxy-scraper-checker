@@ -15,7 +15,7 @@ services:
             - ./docker-scripts:/docker-entrypoint-initdb.d
     proxy-scraper-checker:
         build: .
-        container_name: proxy-scraper
+        container_name: proxy-scraper-checker
         environment:
             - PSC_ENVIRONMENT=${ENVIRONMENT}
             - PSC_DBPASSWORD=${POSTGRES_PASSWORD}
