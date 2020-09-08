@@ -1,7 +1,7 @@
 FROM python:3.8-slim
 
 RUN apt-get update && \
-	apt-get install -y --no-install-recommends gcc libc-dev
+	apt-get install -y --no-install-recommends gcc libc-dev make
 
 WORKDIR /app
 
