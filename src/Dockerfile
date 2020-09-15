@@ -7,6 +7,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install --no-cache-dir -r docker-scripts/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD [ "python", "src/main.py" ]
+CMD [ "python", "main.py" ]

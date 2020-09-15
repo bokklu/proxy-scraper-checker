@@ -15,7 +15,8 @@ services:
         volumes:
             - ./docker-scripts:/docker-entrypoint-initdb.d
     proxy-scraper-checker:
-        build: .
+        build:
+            context: ./src
         container_name: proxy-scraper-checker
         environment:
             - TZ=Europe/Amsterdam

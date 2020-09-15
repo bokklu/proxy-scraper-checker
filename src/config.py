@@ -6,8 +6,8 @@ class Base:
         proxyscrape='https://api.proxyscrape.com/?request=displayproxies'
     )
     geo_db = dict(
-        city_db='/app/src/data/GeoLite2-City.mmdb',
-        asn_db='/app/src/data/GeoLite2-ASN.mmdb'
+        city_db='/app/data/GeoLite2-City.mmdb',
+        asn_db='/app/data/GeoLite2-ASN.mmdb'
     )
     proxyscrape_pool_amount = 2000
     pldown_pool_amount = 2000
