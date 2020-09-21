@@ -13,7 +13,7 @@ services:
         ports:
             - "5432:5432"
         volumes:
-            - ./docker-compose-scripts:/docker-entrypoint-initdb.d
+            - ./docker-compose-scripts/db-scripts:/docker-entrypoint-initdb.d
     proxy-scraper-checker:
         build:
             context: ./src
