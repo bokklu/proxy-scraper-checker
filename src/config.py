@@ -39,7 +39,7 @@ class DevelopmentConfig(Base):
 class ProductionConfig(Base):
     isproduction = True
     sql = dict(
-        host='db',
+        host='vmi449515.contaboserver.net',
         port='5432',
         database='proxydb',
         user='postgres'
