@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ "$POSTGRES_ENVIRONMENT" = "Production" ]
 then
 	sed -i d /var/lib/postgresql/data/pg_hba.conf
