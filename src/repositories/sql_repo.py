@@ -37,7 +37,7 @@ class SqlRepo:
 
             await conn.close()
 
-            logging.info(f'{self.get_cleanup_proxies.__name__} got {len(cleanup_proxies)} with cleanup-range of {self._config["cleanup_day_range"]} days')
+            logging.info(f'{self.get_cleanup_proxies.__name__} got {len(cleanup_proxies)} with cleanup-range of {self._config["cleanup_day_range"]} hours')
 
             return cleanup_proxies
 

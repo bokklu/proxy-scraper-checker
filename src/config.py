@@ -13,7 +13,7 @@ class Base:
     pldown_pool_amount = 2000
     max_retries = 3
     timeout = 8
-    cleanup_day_range = 6
+    cleanup_hour_range = 2
     cleanup_pool_amount = 500
 
 
@@ -32,7 +32,7 @@ class DevelopmentConfig(Base):
         return dict(isdevelopment=self.isdevelopment, isproduction=super().isproduction,
                     provider_connections=super().provider_connections, sql=self.sql, geo_db=self.geo_db,
                     proxyscrape_pool_amount=self.proxyscrape_pool_amount, pldown_pool_amount=super().pldown_pool_amount,
-                    max_retries=super().max_retries, timeout=super().timeout, cleanup_day_range=super().cleanup_day_range,
+                    max_retries=super().max_retries, timeout=super().timeout, cleanup_day_range=super().cleanup_hour_range,
                     cleanup_pool_amount=super().cleanup_pool_amount)
 
 
@@ -51,5 +51,5 @@ class ProductionConfig(Base):
         return dict(isdevelopment=super().isdevelopment, isproduction=self.isproduction,
                     provider_connections=super().provider_connections, sql=self.sql, geo_db=self.geo_db,
                     proxyscrape_pool_amount=self.proxyscrape_pool_amount, pldown_pool_amount=self.pldown_pool_amount,
-                    max_retries=super().max_retries, timeout=super().timeout, cleanup_day_range=super().cleanup_day_range,
+                    max_retries=super().max_retries, timeout=super().timeout, cleanup_day_range=super().cleanup_hour_range,
                     cleanup_pool_amount=super().cleanup_pool_amount)
