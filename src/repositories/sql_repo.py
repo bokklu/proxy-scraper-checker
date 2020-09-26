@@ -33,11 +33,11 @@ class SqlRepo:
         try:
             conn = await self._connect()
 
-            cleanup_proxies = await conn.fetch('SELECT fn_get_cleanup_proxies($1)', self._config['cleanup_day_range'])
+            cleanup_proxies = await conn.fetch('SELECT fn_get_cleanup_proxies($1)', self._config['cleanup_hour_range'])
 
             await conn.close()
 
-            logging.info(f'{self.get_cleanup_proxies.__name__} got {len(cleanup_proxies)} with cleanup-range of {self._config["cleanup_day_range"]} hours')
+            logging.info(f'{self.get_cleanup_proxies.__name__} got {len(cleanup_proxies)} with cleanup-range of {self._config["cleanup_hour_range"]} hours')
 
             return cleanup_proxies
 
@@ -51,7 +51,7 @@ class SqlRepo:
             conn = await self._connect()
 
             async with conn.transaction():
-                cleanup_count = await conn.fetchval('SELECT fn_cleanup_proxies($1, $2)', self._config['cleanup_day_range'], json_proxies)
+                cleanup_count = await conn.fetchval('SELECT fn_cleanup_proxies($1)', json_proxies)
 
             await conn.close()
 
