@@ -442,11 +442,12 @@ $func$  LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_get_cleanup_proxies(cleanup_range integer)
 RETURNS TABLE (address varchar(15),
 			   port int,
-			   type smallint) AS
+			   type smallint,
+			   country_code char(2)) AS
 $func$
 BEGIN
 	RETURN QUERY
-	SELECT p.address, p.port, p.type_id
+	SELECT p.address, p.port, p.type_id, p.country_code
 	FROM proxy as p
 	WHERE modified_date < NOW() - INTERVAL '1 hour' * cleanup_range;
 END
@@ -456,14 +457,15 @@ CREATE OR REPLACE FUNCTION fn_cleanup_proxies(proxies json)
 RETURNS udt_cleanup_count AS $func$
 DECLARE result_count udt_cleanup_count;
 BEGIN
+
     WITH input_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, proxies))
-	
-    UPDATE proxy 
-    SET type_id = subquery.type_id, access_type_id = subquery.access_type_id, speed = subquery.speed, uptime = subquery.uptime, modified_date = CURRENT_TIMESTAMP
-    FROM input_proxies as subquery
-    WHERE proxy.address = subquery.address AND proxy.port = subquery.port AND proxy.type_id = subquery.type_id;
-	
-    WITH working_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy AS p INNER JOIN input_proxies AS i ON p.address = i.address AND p.port = i.port AND p.type_id = i.type_id),
+    UPDATE proxy
+    SET type_id = input_proxies.type_id, access_type_id = input_proxies.access_type_id, speed = input_proxies.speed, uptime = input_proxies.uptime, modified_date = CURRENT_TIMESTAMP
+    FROM input_proxies
+    WHERE proxy.address = input_proxies.address AND proxy.port = input_proxies.port AND proxy.type_id = input_proxies.type_id;
+
+    WITH input_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, proxies)),
+    working_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy AS p INNER JOIN input_proxies AS i ON p.address = i.address AND p.port = i.port AND p.type_id = i.type_id),
     old_proxies_city AS (SELECT address FROM proxy WHERE address NOT IN (SELECT address FROM working_proxies)),
     old_proxies_isp AS (SELECT isp_id FROM proxy WHERE isp_id NOT IN (SELECT isp_id FROM working_proxies)),
     deleted_proxy AS (DELETE FROM proxy WHERE id NOT IN (SELECT id FROM working_proxies) RETURNING *),
