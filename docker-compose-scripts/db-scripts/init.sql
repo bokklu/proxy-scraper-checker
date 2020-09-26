@@ -456,8 +456,14 @@ CREATE OR REPLACE FUNCTION fn_cleanup_proxies(proxies json)
 RETURNS udt_cleanup_count AS $func$
 DECLARE result_count udt_cleanup_count;
 BEGIN
-    WITH input_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, proxies)),
-    working_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy AS p INNER JOIN input_proxies AS i ON p.address = i.address AND p.port = i.port AND p.type_id = i.type_id),
+    WITH input_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, proxies))
+	
+    UPDATE proxy 
+    SET type_id = subquery.type_id, access_type_id = subquery.access_type_id, speed = subquery.speed, uptime = subquery.uptime, modified_date = CURRENT_TIMESTAMP
+    FROM input_proxies as subquery
+    WHERE proxy.address = subquery.address AND proxy.port = subquery.port AND proxy.type_id = subquery.type_id;
+	
+    WITH working_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy AS p INNER JOIN input_proxies AS i ON p.address = i.address AND p.port = i.port AND p.type_id = i.type_id),
     old_proxies_city AS (SELECT address FROM proxy WHERE address NOT IN (SELECT address FROM working_proxies)),
     old_proxies_isp AS (SELECT isp_id FROM proxy WHERE isp_id NOT IN (SELECT isp_id FROM working_proxies)),
     deleted_proxy AS (DELETE FROM proxy WHERE id NOT IN (SELECT id FROM working_proxies) RETURNING *),

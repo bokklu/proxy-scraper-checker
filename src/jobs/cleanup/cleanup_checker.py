@@ -21,9 +21,11 @@ class CleanupChecker:
 
         http_proxies, https_proxies, http_https_proxies, socks4_proxies, socks5_proxies, socks4_socks5_proxies = [], [], [], [], [], []
 
+	self._proxy_repo.get_access_type = True
+
         for proxy_record in cleanup_proxy_records:
             proxy_type = proxy_record[0][2]
-            scrape_info = ScrapeInfo(proxy=f'{proxy_record[0][0]}:{proxy_record[0][1]}')
+            scrape_info = ScrapeInfo(proxy=f'{proxy_record[0][0]}:{proxy_record[0][1]}', country_code=proxy_record[3])
 
             if proxy_type == ProxyType.HTTP.value:
                 http_proxies.append(scrape_info)
