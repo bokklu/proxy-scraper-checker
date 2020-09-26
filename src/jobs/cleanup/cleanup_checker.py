@@ -25,7 +25,7 @@ class CleanupChecker:
 
         for proxy_record in cleanup_proxy_records:
             proxy_type = proxy_record[0][2]
-            scrape_info = ScrapeInfo(proxy=f'{proxy_record[0][0]}:{proxy_record[0][1]}', country_code=proxy_record[3])
+            scrape_info = ScrapeInfo(proxy=f'{proxy_record[0][0]}:{proxy_record[0][1]}', country_code=proxy_record[0][3])
 
             if proxy_type == ProxyType.HTTP.value:
                 http_proxies.append(scrape_info)
