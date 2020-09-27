@@ -44,14 +44,14 @@ class SqlRepo:
         except Exception as ex:
             logging.error(f'{self.get_cleanup_proxies.__name__}, failed with ex: {str(ex)}')
 
-    async def cleanup_proxies(self, proxies):
-        json_proxies = json.dumps([proxy.__dict__ for proxy in proxies])
+    async def cleanup_proxies(self, range_proxies_ids, working_proxies):
+        json_proxies = json.dumps([proxy.__dict__ for proxy in working_proxies])
 
         try:
             conn = await self._connect()
 
             async with conn.transaction():
-                cleanup_count = await conn.fetchval('SELECT fn_cleanup_proxies($1)', json_proxies)
+                cleanup_count = await conn.fetchval('SELECT fn_cleanup_proxies($1, $2)', range_proxies_ids, json_proxies)
 
             await conn.close()
 

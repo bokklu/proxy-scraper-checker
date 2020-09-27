@@ -20,12 +20,15 @@ class CleanupChecker:
             return
 
         http_proxies, https_proxies, http_https_proxies, socks4_proxies, socks5_proxies, socks4_socks5_proxies = [], [], [], [], [], []
+        range_proxies_ids = []
 
         self._proxy_repo.get_access_type = True
 
         for proxy_record in cleanup_proxy_records:
-            proxy_type = proxy_record[0][2]
-            scrape_info = ScrapeInfo(proxy=f'{proxy_record[0][0]}:{proxy_record[0][1]}', country_code=proxy_record[0][3])
+            proxy_type = proxy_record[0][3]
+            scrape_info = ScrapeInfo(proxy=f'{proxy_record[0][1]}:{proxy_record[0][2]}', country_code=proxy_record[0][4])
+
+            range_proxies_ids.append(proxy_record[0][0])
 
             if proxy_type == ProxyType.HTTP.value:
                 http_proxies.append(scrape_info)
@@ -64,4 +67,4 @@ class CleanupChecker:
                      f'[Attempted HTTP: {len(http_proxies)} and HTTPS: {len(https_proxies)} and HTTP/S: {len(http_https_proxies)}] out of which [HTTP: {proxy_dict["http_count"]}] | [HTTPS: {proxy_dict["https_count"]}] | [HTTP/S: {proxy_dict["http_https_count"]}] || '
                      f'[Attempted SOCKS4: {len(socks4_proxies)} and SOCKS5: {len(socks5_proxies)} and SOCKS4/5: {len(socks4_socks5_proxies)}] out of which [SOCKS4: {proxy_dict["socks4_count"]}] | [SOCKS5: {proxy_dict["socks5_count"]}] | [SOCKS4/5: {proxy_dict["socks4_socks5_count"]}] ||')
 
-        await self._sql_repo.cleanup_proxies(proxy_dict['proxies'])
+        await self._sql_repo.cleanup_proxies(range_proxies_ids, proxy_dict['proxies'])
