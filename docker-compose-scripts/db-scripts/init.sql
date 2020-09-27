@@ -452,7 +452,7 @@ BEGIN
 END
 $func$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION fn_cleanup_proxies(proxies_range_ids integer[], working_proxies json)
+CREATE OR REPLACE FUNCTION fn_cleanup_proxies(proxies_range_ids int[], working_proxies json)
 RETURNS udt_cleanup_count AS $func$
 DECLARE result_count udt_cleanup_count;
 BEGIN
@@ -464,11 +464,12 @@ BEGIN
     WHERE proxy.address = iwp.address AND proxy.port = iwp.port AND proxy.type_id = iwp.type_id;
 
     WITH input_working_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, working_proxies)),
-    stale_proxies AS (SELECT * FROM proxies_range_ids EXCEPT SELECT iwp.id FROM input_working_proxies as iwp),
-    good_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy as p WHERE p.id NOT IN (SELECT * FROM proxies_range_ids)),
+	input_proxy_range AS (SELECT * FROM unnest(proxies_range_ids::int[])),
+    stale_proxies AS (SELECT * FROM input_proxy_range EXCEPT (SELECT p.id FROM input_working_proxies as iwp INNER JOIN proxy AS p ON iwp.address = p.address AND iwp.port = p.port AND iwp.type_id = p.type_id)),
+    good_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy as p WHERE p.id NOT IN (SELECT * FROM input_proxy_range)),
     old_proxies_city AS (SELECT address FROM proxy WHERE address NOT IN (SELECT address FROM good_proxies) AND address NOT IN (SELECT address FROM input_working_proxies)),
     old_proxies_isp AS (SELECT isp_id FROM proxy WHERE isp_id NOT IN (SELECT isp_id FROM good_proxies) AND isp_id NOT IN (SELECT isp_id FROM input_working_proxies)),
-    deleted_proxy AS (DELETE FROM proxy WHERE id IN (SELECT id FROM stale_proxies) RETURNING *),
+    deleted_proxy AS (DELETE FROM proxy WHERE id IN (SELECT * FROM stale_proxies) RETURNING *),
     deleted_isp AS (DELETE FROM isp WHERE id IN (SELECT * FROM old_proxies_isp) RETURNING *),
     deleted_city AS (DELETE FROM city WHERE proxy_address IN (SELECT * FROM old_proxies_city) RETURNING *)
 
