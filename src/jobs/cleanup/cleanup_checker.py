@@ -8,10 +8,11 @@ from contracts.proxy import Proxy
 
 class CleanupChecker:
 
-    def __init__(self, config, sql_repo, proxy_repo):
+    def __init__(self, config, sql_repo, proxy_repo, api_repo):
         self._config = config
         self._sql_repo = sql_repo
         self._proxy_repo = proxy_repo
+        self._api_repo = api_repo
 
     async def cleanup_proxies(self):
         cleanup_proxy_records = await self._sql_repo.get_cleanup_proxies()
@@ -61,10 +62,11 @@ class CleanupChecker:
 
         if len(proxy_dict['proxies']) == 0:
             logging.info('Clean up job found no working proxies.')
-            return
 
         logging.info(f'Successful: {len(proxy_dict["proxies"])}/{len(tasks.results)} || '
                      f'[Attempted HTTP: {len(http_proxies)} and HTTPS: {len(https_proxies)} and HTTP/S: {len(http_https_proxies)}] out of which [HTTP: {proxy_dict["http_count"]}] | [HTTPS: {proxy_dict["https_count"]}] | [HTTP/S: {proxy_dict["http_https_count"]}] || '
                      f'[Attempted SOCKS4: {len(socks4_proxies)} and SOCKS5: {len(socks5_proxies)} and SOCKS4/5: {len(socks4_socks5_proxies)}] out of which [SOCKS4: {proxy_dict["socks4_count"]}] | [SOCKS5: {proxy_dict["socks5_count"]}] | [SOCKS4/5: {proxy_dict["socks4_socks5_count"]}] ||')
 
         await self._sql_repo.cleanup_proxies(range_proxies_ids, proxy_dict['proxies'])
+
+        await self._api_repo.cache_refresh()

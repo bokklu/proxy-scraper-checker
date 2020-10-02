@@ -8,11 +8,12 @@ from utils.proxy_helper import ProxyHelper
 
 class ProxyScrapeChecker:
 
-    def __init__(self, config, geo_repo, proxy_repo, sql_repo, proxyscrape_scraper):
+    def __init__(self, config, geo_repo, proxy_repo, sql_repo, api_repo, proxyscrape_scraper):
         self._config = config
         self._geo_repo = geo_repo
         self._proxy_repo = proxy_repo
         self._sql_repo = sql_repo
+        self._api_repo = api_repo
         self._proxyscrape_scraper = proxyscrape_scraper
 
     async def check_proxies(self):
@@ -40,3 +41,5 @@ class ProxyScrapeChecker:
         isps, locations, geo_filtered_proxies = self._geo_repo.geo_resolve(proxy_dict['proxies'], get_country=True)
 
         await self._sql_repo.insert_proxies(isps, locations, geo_filtered_proxies, Provider.PROXYSCRAPE)
+
+        await self._api_repo.cache_refresh()

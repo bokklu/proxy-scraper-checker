@@ -8,14 +8,17 @@ from utils.proxy_helper import ProxyHelper
 
 class PldownChecker:
 
-    def __init__(self, config, geo_repo, proxy_repo, sql_repo, pldown_scraper):
+    def __init__(self, config, geo_repo, proxy_repo, sql_repo, api_repo, pldown_scraper):
         self._config = config
         self._geo_repo = geo_repo
         self._proxy_repo = proxy_repo
         self._sql_repo = sql_repo
+        self._api_repo = api_repo
         self._pldown_scraper = pldown_scraper
 
     async def check_proxies(self):
+        await self._api_repo.cache_refresh()
+
         async with ClientSession() as client_session:
             pldown_http_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ProxyType.HTTP))
             pldown_https_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ProxyType.HTTPS))
@@ -47,3 +50,5 @@ class PldownChecker:
         isps, locations, geo_filtered_proxies = self._geo_repo.geo_resolve(proxy_dict["proxies"], get_country=False)
 
         await self._sql_repo.insert_proxies(isps, locations, geo_filtered_proxies, Provider.PLDOWN)
+
+        await self._api_repo.cache_refresh()
