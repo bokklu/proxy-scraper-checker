@@ -21,6 +21,8 @@ class ApiRepo:
         async with aiohttp.ClientSession() as session:
             async with async_timeout.timeout(self._cache_api_timeout):
                 async with session.put(self._cache_api, headers=headers, verify_ssl=False) as response:
-                    if response.status != 200:
+                    if response.status == 200:
+                        logging.info(f'Cache has been refreshed, CorrelationId={correlation_id}')
+                    elif response.status != 200:
                         logging.error(f'Something went wrong when refreshing the cache, CorrelationId={correlation_id}')
                     return
