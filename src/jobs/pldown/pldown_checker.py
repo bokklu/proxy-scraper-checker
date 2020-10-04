@@ -17,8 +17,6 @@ class PldownChecker:
         self._pldown_scraper = pldown_scraper
 
     async def check_proxies(self):
-        await self._api_repo.cache_refresh()
-
         async with ClientSession() as client_session:
             pldown_http_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ProxyType.HTTP))
             pldown_https_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ProxyType.HTTPS))
