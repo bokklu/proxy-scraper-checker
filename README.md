@@ -36,14 +36,17 @@ The proxies are then saved to an external PostgreSQL database.
 ## Environment:
 Environmental components (PostgreSQL) are Docker based. The docker-compose.yml file found in the root directory of the project makes it easier for local development as it runs the dependent components in containers.
 
-To build and run the python-scraper-checker locally:
-- docker-compose up --build
+To build and run the python-scraper-checker locally (order is important):
+- docker-compose up db
+- docker-compose up proxy-api
+- docker-compose up proxy-scraper-checker
 
 To run the python-scraper-checker directly from python:
 - python main.py
 
 ### Ports used:
 - PostgeSQL: **5432**
+- The port to access the proxy-api locally is: **5000**
 
 ### Environment Variables used:
 In order to make it easier to manage and keep all environment variables together, create a **.env** file in the root project directory and populate it with the environment variables listed below. This file should be left out when committing, as it might contain sensitive information.
