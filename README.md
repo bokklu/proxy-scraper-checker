@@ -46,6 +46,7 @@ To run the python-scraper-checker directly from python:
 
 ### Ports used:
 - PostgeSQL: **5432**
+- The port to access the proxy-api locally is: **5000**
 
 ### Environment Variables used:
 In order to make it easier to manage and keep all environment variables together, create a **.env** file in the root project directory and populate it with the environment variables listed below. This file should be left out when committing, as it might contain sensitive information.
