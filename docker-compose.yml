@@ -29,8 +29,6 @@ services:
             options:
                 max-size: "50m"
                 max-file: "2"
-        networks:
-            - hostnetwork
         restart: always
     proxy-scraper-checker:
         build:
@@ -45,9 +43,5 @@ services:
             options:
                 max-size: "50m"
                 max-file: "2"
-        networks:
-            - hostnetwork
+        network_mode: "host"
         restart: always
-    networks:
-        hostnetwork:
-            driver: "host"
