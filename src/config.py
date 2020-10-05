@@ -21,7 +21,7 @@ class Base:
 class DevelopmentConfig(Base):
     isdevelopment = True
     sql = dict(
-        host='db',
+        host='localhost',
         port='5432',
         database='proxydb',
         user='postgres',
@@ -47,7 +47,7 @@ class ProductionConfig(Base):
         database='proxydb',
         user='postgres'
     )
-    cache_api = 'http://api.proxykingdom.com/proxy/cacherefresh'
+    cache_api = 'https://api.proxykingdom.com/proxy/cacherefresh'
     proxyscrape_pool_amount = 250
     pldown_pool_amount = 250
     
