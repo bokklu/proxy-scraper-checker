@@ -479,3 +479,43 @@ BEGIN
     RETURN result_count;
 END
 $func$  LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fn_get_proxies()
+RETURNS TABLE (address varchar(15),
+			  port int,
+			  type smallint,
+			  access_type smallint,
+			  speed int,
+			  uptime smallint,
+			  modified_date timestamp,
+			  country_code char(2),
+			  country_name varchar(50),
+			  continent_code char(2),
+			  continent_name varchar(20),
+			  proxy_address varchar(15),
+			  city_name varchar(100),
+			  longitude decimal,
+			  latitude decimal,
+			  sub_division1 varchar(100),
+			  sub_division1_code varchar(3),
+			  sub_division2 varchar(100),
+			  sub_division2_code varchar(3),
+			  postal_code varchar(20),
+			  accuracy_radius smallint,
+			  timezone varchar(50),
+			  isp_id int,
+			  isp_name varchar(150)) AS
+$func$
+BEGIN
+	RETURN QUERY
+	SELECT p.address, p.port, p.type_id, p.access_type_id, p.speed, p.uptime, p.modified_date,
+		   cou.code, cou.name, cou.continent_code, con.name,
+		   ci.proxy_address, ci.name, ci.longitude, ci.latitude, ci.sub_division1, ci.sub_division1_code, ci.sub_division2, ci.sub_division2_code, ci.postal_code, ci.accuracy_radius, ci.timezone,
+		   i.id, i.name
+	FROM proxy as p
+	INNER JOIN country as cou ON cou.code = p.country_code
+	INNER JOIN continent as con ON con.code = cou.continent_code
+	INNER JOIN city as ci ON ci.proxy_address = p.address
+	INNER JOIN isp as i ON i.id = p.isp_id;
+END
+$func$ LANGUAGE plpgsql;
