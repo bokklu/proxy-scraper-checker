@@ -52,7 +52,7 @@ CREATE TABLE city
 
 CREATE TABLE proxy
 (
-	id SERIAL PRIMARY KEY NOT NULL,
+	id bigserial PRIMARY KEY NOT NULL,
 	address varchar(15) NOT NULL REFERENCES city(proxy_address),
 	port int NOT NULL,
 	country_code char(2) REFERENCES country(code),
@@ -66,7 +66,22 @@ CREATE TABLE proxy
 	modified_date timestamp NOT NULL
 );
 
-CREATE UNIQUE INDEX proxy_address_port_ui ON proxy (address, port, type_id);
+CREATE TABLE subscription_type
+(
+	id smallint PRIMARY KEY NOT NULL,
+	name varchar(10) NOT NULL
+);
+
+CREATE TABLE subscription
+(
+	subscription_id varchar(50) PRIMARY KEY NOT NULL,
+	customer_id varchar(50) NOT NULL,
+	api_key char(16) NOT NULL,
+	issued_date timestamp NOT NULL,
+	subscription_type smallint REFERENCES subscription_type(id) NOT NULL
+);
+
+CREATE UNIQUE INDEX proxy_address_port_ui ON proxy (address, port);
 ALTER TABLE proxy
 ADD CONSTRAINT proxy_address_port_uc UNIQUE USING INDEX proxy_address_port_ui;
 
@@ -348,6 +363,11 @@ INSERT INTO country (code, name, continent_code) VALUES
 ('ZM', 'Zambia' ,'AF'),
 ('ZW', 'Zimbabwe' ,'AF');
 
+INSERT INTO subscription_type (id, name) VALUES
+(1, 'Day'),
+(2, 'Month'),
+(3, 'Year');
+
 CREATE TYPE udt_isp AS
 (
 	id int,
@@ -428,7 +448,7 @@ BEGIN
         INSERT INTO proxy as p (address, port, country_code, type_id, access_type_id, provider_id, isp_id, speed, uptime, created_date, modified_date)
         SELECT *, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM json_populate_recordset(null::udt_proxy, proxies)
         ON CONFLICT ON CONSTRAINT proxy_address_port_uc
-        DO UPDATE SET speed = p.speed, uptime = p.uptime, modified_date = CURRENT_TIMESTAMP RETURNING xmax
+        DO UPDATE SET type_id = p.type_id, access_type_id = p.access_type_id, speed = p.speed, uptime = p.uptime, provider_id = p.provider_id, modified_date = CURRENT_TIMESTAMP RETURNING xmax
     )
     SELECT COUNT(*) FILTER (WHERE xmax = 0),
            COUNT(*) FILTER (WHERE xmax::text::int > 0)
@@ -461,11 +481,11 @@ BEGIN
     UPDATE proxy
     SET type_id = iwp.type_id, access_type_id = iwp.access_type_id, speed = iwp.speed, uptime = iwp.uptime, modified_date = CURRENT_TIMESTAMP
     FROM input_working_proxies as iwp
-    WHERE proxy.address = iwp.address AND proxy.port = iwp.port AND proxy.type_id = iwp.type_id;
+    WHERE proxy.address = iwp.address AND proxy.port = iwp.port;
 
     WITH input_working_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, working_proxies)),
-	input_proxy_range AS (SELECT * FROM unnest(proxies_range_ids::int[])),
-    stale_proxies AS (SELECT * FROM input_proxy_range EXCEPT (SELECT p.id FROM input_working_proxies as iwp INNER JOIN proxy AS p ON iwp.address = p.address AND iwp.port = p.port AND iwp.type_id = p.type_id)),
+    input_proxy_range AS (SELECT * FROM unnest(proxies_range_ids::int[])),
+    stale_proxies AS (SELECT * FROM input_proxy_range EXCEPT (SELECT p.id FROM input_working_proxies as iwp INNER JOIN proxy AS p ON iwp.address = p.address AND iwp.port = p.port)),
     good_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy as p WHERE p.id NOT IN (SELECT * FROM input_proxy_range)),
     old_proxies_city AS (SELECT address FROM proxy WHERE address NOT IN (SELECT address FROM good_proxies) AND address NOT IN (SELECT address FROM input_working_proxies)),
     old_proxies_isp AS (SELECT isp_id FROM proxy WHERE isp_id NOT IN (SELECT isp_id FROM good_proxies) AND isp_id NOT IN (SELECT isp_id FROM input_working_proxies)),

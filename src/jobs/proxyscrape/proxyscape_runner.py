@@ -14,6 +14,7 @@ class ProxyScrapeRunner:
         try:
             loop.run_until_complete(self._proxyscrape_checker.check_proxies())
         except Exception as ex:
-            print(ex)
+            logging.error(ex)
+            pass
 
         logging.info(f'ProxyScrape Job took: {time.time() - start_time}')
