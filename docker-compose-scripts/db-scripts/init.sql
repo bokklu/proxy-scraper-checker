@@ -460,7 +460,7 @@ END
 $func$  LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fn_get_cleanup_proxies(cleanup_range integer)
-RETURNS TABLE (id int,
+RETURNS TABLE (id bigint,
 			   address varchar(15),
 			   port int,
 			   type smallint,
