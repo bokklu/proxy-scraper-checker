@@ -23,6 +23,12 @@ class ProxyScrapeChecker:
             proxyscrape_socks5_task = asyncio.create_task(self._proxyscrape_scraper.scrape(client_session, ProxyType.SOCKS5))
             provider_proxies = await asyncio.gather(*[proxyscrape_http_task, proxyscrape_socks4_task, proxyscrape_socks5_task])
 
+        # check ips which are in http/https and also socks4/5 [and remove them from socks]
+        http_socks4 = provider_proxies[0].intersection(provider_proxies[1])
+        http_socks5 = provider_proxies[0].intersection(provider_proxies[2])
+        provider_proxies[1].difference_update(http_socks4)
+        provider_proxies[2].difference_update(http_socks5)
+
         socks4_proxies = provider_proxies[1] - provider_proxies[2]
 
         self._proxy_repo.get_access_type = True

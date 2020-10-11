@@ -13,7 +13,7 @@ class Proxy(RecordClass):
     uptime: int = None
 
     def __hash__(self):
-        return hash((self.address, self.port))
+        return hash((self.address, self.port, self.provider_id, self.country_code, self.access_type_id, self.type_id, self.isp_id, self.speed, self.uptime))
 
     def __eq__(self, other):
         if isinstance(other, Proxy):
