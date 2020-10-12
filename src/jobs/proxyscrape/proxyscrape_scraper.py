@@ -13,7 +13,11 @@ class ProxyScrapeScraper:
     async def scrape(self, session, proxy_type):
         for retry in range(10):
 
-            ssl = 'yes' if proxy_type is ProxyType.HTTPS else 'all'
+            if proxy_type is ProxyType.HTTPS:
+                ssl = 'yes'
+                proxy_type = ProxyType.HTTP
+            else:
+                ssl = 'all'
 
             try:
                 async with async_timeout.timeout(7):
