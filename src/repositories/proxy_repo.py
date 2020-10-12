@@ -80,7 +80,7 @@ class ProxyRepo:
                     return statistics
 
         if response_times:
-            print(f'{scrape_info.proxy} is successful')
+            print(f'{scrape_info.proxy} for {socks_type.name} is successful')
             ip_tokens = scrape_info.proxy.split(':')
             statistics.address = ip_tokens[0]
             statistics.port = ip_tokens[1]
