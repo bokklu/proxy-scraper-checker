@@ -4,10 +4,8 @@ from aenum import Enum
 class ProxyType(Enum):
     HTTP = 1
     HTTPS = 2
-    HTTP_HTTPS = 3
-    SOCKS4 = 4
-    SOCKS5 = 5
-    SOCKS4_SOCKS5 = 6
+    SOCKS4 = 3
+    SOCKS5 = 4
 
 
 class Response(Enum):
@@ -15,7 +13,6 @@ class Response(Enum):
     ERROR = 2
     TIMEOUT = 3
     OTHER = 4
-    ERROR_OTHER = 5
 
 
 class ProxyAccessType(Enum):

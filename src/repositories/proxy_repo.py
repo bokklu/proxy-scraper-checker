@@ -92,36 +92,6 @@ class ProxyRepo:
 
         return statistics
 
-    async def ping_multiple_http(self, scrape_info):
-        http_task = asyncio.create_task(self.ping_http(ProxyType.HTTP, scrape_info))
-        https_task = asyncio.create_task(self.ping_http(ProxyType.HTTPS, scrape_info))
-        results = await asyncio.gather(http_task, https_task)
-
-        if results[0].result_type is Response.SUCCESS and results[1].result_type is Response.SUCCESS:
-            results[0].type_id = ProxyType.HTTP_HTTPS.value
-            return results[0]
-        elif results[0].result_type is Response.SUCCESS and results[1].result_type is not Response.SUCCESS:
-            return results[0]
-        elif results[0].result_type is not Response.SUCCESS and results[1].result_type is Response.SUCCESS:
-            return results[1]
-        else:
-            return results[0]
-
-    async def ping_multiple_socks(self, scrape_info):
-        socks4_task = asyncio.create_task(self.ping_socks(ProxyType.SOCKS4, scrape_info))
-        socks5_task = asyncio.create_task(self.ping_socks(ProxyType.SOCKS5, scrape_info))
-        results = await asyncio.gather(socks4_task, socks5_task)
-
-        if results[0].result_type is Response.SUCCESS and results[1].result_type is Response.SUCCESS:
-            results[0].type_id = ProxyType.SOCKS4_SOCKS5.value
-            return results[0]
-        elif results[0].result_type is Response.SUCCESS and results[1].result_type is not Response.SUCCESS:
-            return results[0]
-        elif results[0].result_type is not Response.SUCCESS and results[1].result_type is Response.SUCCESS:
-            return results[1]
-        else:
-            return results[0]
-
     @staticmethod
     def _check_access_type(response_headers):
         if 'X-Cache-Lookup' and 'Via' in response_headers:

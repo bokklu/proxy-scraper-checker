@@ -3,7 +3,6 @@ from contracts.enums import ProxyType
 from contracts.scrape_info import ScrapeInfo
 from utils.task_pool import TaskPool
 from utils.proxy_helper import ProxyHelper
-from contracts.proxy import Proxy
 
 
 class CleanupChecker:
@@ -20,7 +19,7 @@ class CleanupChecker:
         if len(cleanup_proxy_records) == 0:
             return
 
-        http_proxies, https_proxies, http_https_proxies, socks4_proxies, socks5_proxies, socks4_socks5_proxies = [], [], [], [], [], []
+        http_proxies, https_proxies, socks4_proxies, socks5_proxies = [], [], [], []
         range_proxies_ids = []
 
         self._proxy_repo.get_access_type = True
@@ -37,26 +36,18 @@ class CleanupChecker:
             elif proxy_type == ProxyType.HTTPS.value:
                 https_proxies.append(scrape_info)
                 continue
-            elif proxy_type == ProxyType.HTTP_HTTPS.value:
-                http_https_proxies.append(scrape_info)
-                continue
             elif proxy_type == ProxyType.SOCKS4.value:
                 socks4_proxies.append(scrape_info)
                 continue
             elif proxy_type == ProxyType.SOCKS5.value:
                 socks5_proxies.append(scrape_info)
                 continue
-            elif proxy_type == ProxyType.SOCKS4_SOCKS5.value:
-                socks4_socks5_proxies.append(scrape_info)
-                continue
 
         async with TaskPool(self._config['cleanup_pool_amount']) as tasks:
             for scrape_info in http_proxies: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTP, scrape_info))
             for scrape_info in https_proxies: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTPS, scrape_info))
-            for scrape_info in http_https_proxies: await tasks.put(self._proxy_repo.ping_multiple_http(scrape_info))
             for scrape_info in socks4_proxies: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS4, scrape_info))
             for scrape_info in socks5_proxies: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS5, scrape_info))
-            for scrape_info in socks4_socks5_proxies: await tasks.put(self._proxy_repo.ping_multiple_socks(scrape_info))
 
         proxy_dict = ProxyHelper.create_and_get_proxy_stats(tasks.results, provider_id=None)
 
@@ -64,8 +55,8 @@ class CleanupChecker:
             logging.info('Clean up job found no working proxies.')
 
         logging.info(f'Successful: {len(proxy_dict["proxies"])}/{len(tasks.results)} || '
-                     f'[Attempted HTTP: {len(http_proxies)} and HTTPS: {len(https_proxies)} and HTTP/S: {len(http_https_proxies)}] out of which [HTTP: {proxy_dict["http_count"]}] | [HTTPS: {proxy_dict["https_count"]}] | [HTTP/S: {proxy_dict["http_https_count"]}] || '
-                     f'[Attempted SOCKS4: {len(socks4_proxies)} and SOCKS5: {len(socks5_proxies)} and SOCKS4/5: {len(socks4_socks5_proxies)}] out of which [SOCKS4: {proxy_dict["socks4_count"]}] | [SOCKS5: {proxy_dict["socks5_count"]}] | [SOCKS4/5: {proxy_dict["socks4_socks5_count"]}] ||')
+                     f'[Attempted HTTP: {len(http_proxies)} and HTTPS: {len(https_proxies)} out of which [HTTP: {proxy_dict["http_count"]}] | [HTTPS: {proxy_dict["https_count"]}] || '
+                     f'[Attempted SOCKS4: {len(socks4_proxies)} and SOCKS5: {len(socks5_proxies)}] out of which [SOCKS4: {proxy_dict["socks4_count"]}] | [SOCKS5: {proxy_dict["socks5_count"]}] ||')
 
         await self._sql_repo.cleanup_proxies(range_proxies_ids, proxy_dict['proxies'])
 

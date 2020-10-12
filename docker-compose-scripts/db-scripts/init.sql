@@ -81,7 +81,7 @@ CREATE TABLE subscription
 	subscription_type smallint REFERENCES subscription_type(id) NOT NULL
 );
 
-CREATE UNIQUE INDEX proxy_address_port_ui ON proxy (address, port);
+CREATE UNIQUE INDEX proxy_address_port_ui ON proxy (address, port, type_id);
 ALTER TABLE proxy
 ADD CONSTRAINT proxy_address_port_uc UNIQUE USING INDEX proxy_address_port_ui;
 
@@ -93,10 +93,8 @@ INSERT INTO access_type (id, name) VALUES
 INSERT INTO type(id, name) VALUES
 (1, 'Http'),
 (2, 'Https'),
-(3, 'Http/s'),
-(4, 'Socks4'),
-(5, 'Socks5'),
-(6, 'Socks4/5');
+(3, 'Socks4'),
+(4, 'Socks5');
 
 INSERT INTO provider (id, name) VALUES
 (1, 'Pldown'),
@@ -448,7 +446,7 @@ BEGIN
         INSERT INTO proxy as p (address, port, country_code, type_id, access_type_id, provider_id, isp_id, speed, uptime, created_date, modified_date)
         SELECT *, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM json_populate_recordset(null::udt_proxy, proxies)
         ON CONFLICT ON CONSTRAINT proxy_address_port_uc
-        DO UPDATE SET type_id = p.type_id, access_type_id = p.access_type_id, speed = p.speed, uptime = p.uptime, provider_id = p.provider_id, modified_date = CURRENT_TIMESTAMP RETURNING xmax
+        DO UPDATE SET access_type_id = p.access_type_id, speed = p.speed, uptime = p.uptime, provider_id = p.provider_id, modified_date = CURRENT_TIMESTAMP RETURNING xmax
     )
     SELECT COUNT(*) FILTER (WHERE xmax = 0),
            COUNT(*) FILTER (WHERE xmax::text::int > 0)
@@ -479,13 +477,13 @@ BEGIN
 
     WITH input_working_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, working_proxies))
     UPDATE proxy
-    SET type_id = iwp.type_id, access_type_id = iwp.access_type_id, speed = iwp.speed, uptime = iwp.uptime, modified_date = CURRENT_TIMESTAMP
+    SET access_type_id = iwp.access_type_id, speed = iwp.speed, uptime = iwp.uptime, modified_date = CURRENT_TIMESTAMP
     FROM input_working_proxies as iwp
-    WHERE proxy.address = iwp.address AND proxy.port = iwp.port;
+    WHERE proxy.address = iwp.address AND proxy.port = iwp.port AND proxy.type_id = iwp.type_id;
 
     WITH input_working_proxies AS (SELECT * FROM json_populate_recordset(null::udt_proxy, working_proxies)),
     input_proxy_range AS (SELECT * FROM unnest(proxies_range_ids::int[])),
-    stale_proxies AS (SELECT * FROM input_proxy_range EXCEPT (SELECT p.id FROM input_working_proxies as iwp INNER JOIN proxy AS p ON iwp.address = p.address AND iwp.port = p.port)),
+    stale_proxies AS (SELECT * FROM input_proxy_range EXCEPT (SELECT p.id FROM input_working_proxies as iwp INNER JOIN proxy AS p ON iwp.address = p.address AND iwp.port = p.port AND iwp.type_id = p.type_id)),
     good_proxies AS (SELECT p.id, p.address, p.isp_id FROM proxy as p WHERE p.id NOT IN (SELECT * FROM input_proxy_range)),
     old_proxies_city AS (SELECT address FROM proxy WHERE address NOT IN (SELECT address FROM good_proxies) AND address NOT IN (SELECT address FROM input_working_proxies)),
     old_proxies_isp AS (SELECT isp_id FROM proxy WHERE isp_id NOT IN (SELECT isp_id FROM good_proxies) AND isp_id NOT IN (SELECT isp_id FROM input_working_proxies)),

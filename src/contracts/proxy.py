@@ -17,6 +17,6 @@ class Proxy(RecordClass):
 
     def __eq__(self, other):
         if isinstance(other, Proxy):
-            return self.address, self.port == other.address, other.port
+            return self.address, self.port, self.type_id == other.address, other.port, other.type_id
         else:
             return False
