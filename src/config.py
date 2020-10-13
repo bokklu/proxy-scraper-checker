@@ -48,8 +48,8 @@ class ProductionConfig(Base):
         user='postgres'
     )
     cache_api = 'https://api.proxykingdom.com/proxy/cacherefresh'
-    proxyscrape_pool_amount = 250
-    pldown_pool_amount = 250
+    proxyscrape_pool_amount = 5000
+    pldown_pool_amount = 5000
     
     def asdict(self):
         return dict(isdevelopment=super().isdevelopment, isproduction=self.isproduction,
