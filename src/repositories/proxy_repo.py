@@ -32,9 +32,10 @@ class ProxyRepo:
                     continue
                 except (aiohttp.ServerDisconnectedError, OSError) as server_os_error:
                     print(f'{scrape_info.proxy} {http_type.name} Server/OS Error: {server_os_error}')
-                    if attempt == self._max_retries:
+                    if attempt == self._max_retries - 1:
                         statistics.result_type = Response.ERROR
                         return statistics
+                    continue
                 except (aiohttp.ClientProxyConnectionError, Exception) as break_ex:
                     print(f'{scrape_info.proxy} {http_type.name} Break Ex: {break_ex}')
                     statistics.result_type = Response.ERROR
@@ -71,9 +72,10 @@ class ProxyRepo:
                     continue
                 except (OSError, ProxyError) as error_ex:
                     print(f'{scrape_info.proxy} Error: {error_ex}')
-                    if attempt == self._max_retries:
+                    if attempt == self._max_retries - 1:
                         statistics.result_type = Response.ERROR
                         return statistics
+                    continue
                 except (aiohttp.ClientProxyConnectionError, Exception) as break_ex:
                     print(f'{scrape_info.proxy} Break Ex: {break_ex}')
                     statistics.result_type = Response.ERROR
