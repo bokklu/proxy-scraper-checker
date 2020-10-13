@@ -2,6 +2,7 @@ import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 from utils.schedule_thread import ScheduleThread
+from utils.schedule_thread_second import ScheduleThreadSecond
 from config import DevelopmentConfig, ProductionConfig
 from containers import Configs
 
@@ -28,4 +29,8 @@ if __name__ == "__main__":
     Configs.config.override(config.asdict())
 
     schedule_thread = ScheduleThread()
+    schedule_thread_second = ScheduleThreadSecond()
     schedule_thread.start()
+    schedule_thread_second.start()
+    schedule_thread.join()
+    schedule_thread_second.join()

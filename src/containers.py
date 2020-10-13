@@ -12,6 +12,7 @@ from jobs.proxyscrape.proxyscrape_checker import ProxyScrapeChecker
 from jobs.cleanup.cleanup_checker import CleanupChecker
 from jobs.cleanup.cleanup_runner import CleanupRunner
 from scheduler import Scheduler
+from scheduler_second import SchedulerSecond
 
 
 class Configs(containers.DeclarativeContainer):
@@ -44,3 +45,4 @@ class Runners(containers.DeclarativeContainer):
 
 class Scheduler(containers.DeclarativeContainer):
     scheduler = providers.Singleton(Scheduler, pldown_runner=Runners.pldown_runner, proxyscrape_runner=Runners.proxyscrape_runner, cleanup_runner=Runners.cleanup_runner)
+    scheduler_second = providers.Singleton(SchedulerSecond, pldown_runner=Runners.pldown_runner, proxyscrape_runner=Runners.proxyscrape_runner, cleanup_runner=Runners.cleanup_runner)
