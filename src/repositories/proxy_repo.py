@@ -16,9 +16,6 @@ class ProxyRepo:
 
     async def ping_http(self, http_type, scrape_info):
         statistics = Statistics(type_id=http_type.value)
-        ip_tokens = scrape_info.proxy.split(':')
-        statistics.address = ip_tokens[0]
-        statistics.port = ip_tokens[1]
         async with aiohttp.ClientSession() as session:
             response_times = []
             for attempt in range(self._max_retries):
@@ -48,6 +45,9 @@ class ProxyRepo:
 
             if response_times:
                 print(f'{scrape_info.proxy} for {http_type.name} is successful')
+                ip_tokens = scrape_info.proxy.split(':')
+                statistics.address = ip_tokens[0]
+                statistics.port = ip_tokens[1]
                 statistics.country_code = scrape_info.country_code
                 statistics.result_type = Response.SUCCESS
                 statistics.speed = int(sum(response_times) / len(response_times))
