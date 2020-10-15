@@ -13,10 +13,10 @@ class Scheduler:
     def schedule_jobs(self, loop):
         logging.info('Starting scheduler...')
 
-        schedule.every(1).hour.at(':00').do(self._pldown_runner.run_pldown_job, loop).run()
+        #schedule.every(1).hour.at(':00').do(self._pldown_runner.run_pldown_job, loop).run()
         schedule.every(2).hours.at(':00').do(self._proxyscrape_runner.run_proxyscrape_job, loop).run()
 
-        schedule.every(4).hours.at(":00").do(self._cleanup_runner.run_cleanup_job, loop)
+        #schedule.every(4).hours.at(":00").do(self._cleanup_runner.run_cleanup_job, loop)
 
         while True:
             schedule.run_pending()
