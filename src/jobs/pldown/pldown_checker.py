@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from aiohttp import ClientSession
-from contracts.enums import ProxyType, Provider
+from contracts.enums import ProxyType, ScrapeProxyType, Provider
 from utils.task_pool import TaskPool
 from utils.proxy_helper import ProxyHelper
 
@@ -18,15 +18,17 @@ class PldownChecker:
 
     async def check_proxies(self):
         async with ClientSession() as client_session:
-            pldown_http_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ProxyType.HTTP))
-            pldown_https_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ProxyType.HTTPS))
-            pldown_socks4_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ProxyType.SOCKS4))
-            pldown_socks5_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ProxyType.SOCKS5))
-            provider_proxies = await asyncio.gather(*[pldown_http_task, pldown_https_task, pldown_socks4_task, pldown_socks5_task])
+            pldown_http_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ScrapeProxyType.HTTP))
+            pldown_http_ssl_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ScrapeProxyType.HTTPS))
+            pldown_socks4_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ScrapeProxyType.SOCKS4))
+            pldown_socks5_task = asyncio.create_task(self._pldown_scraper.scrape(client_session, ScrapeProxyType.SOCKS5))
+            provider_proxies = await asyncio.gather(*[pldown_http_task, pldown_http_ssl_task, pldown_socks4_task, pldown_socks5_task])
+
+        http_only = provider_proxies[0].difference(provider_proxies[1])
 
         async with TaskPool(self._config['pldown_pool_amount']) as tasks:
-            for scrape_info in provider_proxies[0]: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTP, scrape_info))
-            for scrape_info in provider_proxies[1]: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTPS, scrape_info))
+            for scrape_info in http_only: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTP, scrape_info))
+            for scrape_info in provider_proxies[1]: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTP, scrape_info, ssl=True))
             for scrape_info in provider_proxies[2]: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS4, scrape_info))
             for scrape_info in provider_proxies[3]: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS5, scrape_info))
 
