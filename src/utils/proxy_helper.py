@@ -9,6 +9,8 @@ class ProxyHelper:
         proxy_records = set()
         http_c = http_ssl_c = socks4_c = socks5_c = 0
 
+        nonworking_http = []
+
         for t in task_results:
 
             if t.result_type is Response.SUCCESS:
@@ -26,6 +28,14 @@ class ProxyHelper:
                                         provider_id=provider_id,
                                         access_type_id=t.access_type_id, type_id=t.type_id, speed=t.speed,
                                         uptime=t.uptime))
+            else:
+                if t.type_id is ProxyType.HTTP.value:
+                    if t.ssl is False:
+                        nonworking_http.append(f'{t.address}:{t.port}')
+
+        with open('non-working-http.txt', 'w') as f:
+            for item in nonworking_http:
+                f.write("%s\n" % item)
 
         return {'proxies': proxy_records,
                 'http_count': http_c, 'http_ssl_count': http_ssl_c,

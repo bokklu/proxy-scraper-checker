@@ -45,7 +45,7 @@ class ProxyScrapeChecker:
         for proxy in socks4_proxies_file: socks4_proxies.append(ScrapeInfo(proxy=proxy.rstrip('\n')))
         for proxy in socks5_proxies_file: socks5_proxies.append(ScrapeInfo(proxy=proxy.rstrip('\n')))
 
-        connector = ProxyConnector(remote_resolve=False, limit=None, verify_ssl=False)
+        connector = ProxyConnector(remote_resolve=False, limit=None)
         async with ClientSession(connector=connector, request_class=ProxyClientRequest) as session, TaskPool(1750) as tasks:
             for x in http_proxies: await tasks.put(self._proxy_repo.ping(session, ProxyType.HTTP, x))
             for x in https_proxies: await tasks.put(self._proxy_repo.ping(session, ProxyType.HTTP, x, ssl=True))

@@ -18,14 +18,19 @@ class ProxyRepo:
     async def ping(self, session, proxy_type, scrape_info, ssl=False):
         statistics = Statistics(type_id=proxy_type.value)
         response_times = []
-        ssl = 'https' if ssl is True else 'http'
+        if ssl is True:
+            ssl = 'https'
+            statistics.ssl = True
+        else:
+            ssl = 'http'
+            statistics.ssl = False
         for attempt in range(self._max_retries):
             try:
                 async with async_timeout.timeout(self._timeout):
                     req_start_time = time.time()
                     async with session.get(f'{ssl}://example.com',
                                            proxy=f'{proxy_type.name.lower()}://{scrape_info.proxy}',
-                                           allow_redirects=False) as response:
+                                           allow_redirects=False, verify_ssl=False) as response:
                         if response.status == 200 or response.status == 302:
                             response_times.append(int(round((time.time() - req_start_time) * 1000)))
                         else:
@@ -44,11 +49,12 @@ class ProxyRepo:
                 statistics.result_type = Response.ERROR
                 return statistics
 
+        ip_tokens = scrape_info.proxy.split(':')
+        statistics.address = ip_tokens[0]
+        statistics.port = ip_tokens[1]
         if response_times:
             print(f'{scrape_info.proxy} for {proxy_type.name} is successful')
-            ip_tokens = scrape_info.proxy.split(':')
-            statistics.address = ip_tokens[0]
-            statistics.port = ip_tokens[1]
+
             statistics.country_code = scrape_info.country_code
             statistics.result_type = Response.SUCCESS
             statistics.speed = int(sum(response_times) / len(response_times))
