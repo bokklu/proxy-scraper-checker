@@ -31,7 +31,7 @@ class ProxyRepo:
 
         return tasks.results
 
-    async def _ping(self, session, proxy_type, scrape_info, ssl=False):
+    async def ping(self, session, proxy_type, scrape_info, ssl=False):
         statistics = Statistics(type_id=proxy_type.value)
         req_start_time = time.time()
         response_times = []
