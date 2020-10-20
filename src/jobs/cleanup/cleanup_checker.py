@@ -43,7 +43,7 @@ class CleanupChecker:
                 socks5_proxies.append(scrape_info)
                 continue
 
-        async with TaskPool(self._config['cleanup_pool_amount']) as tasks:
+        async with TaskPool(self._config['task_pool']) as tasks:
             for scrape_info in http_proxies: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTP, scrape_info))
             for scrape_info in https_proxies: await tasks.put(self._proxy_repo.ping_http(ProxyType.HTTPS, scrape_info))
             for scrape_info in socks4_proxies: await tasks.put(self._proxy_repo.ping_socks(ProxyType.SOCKS4, scrape_info))

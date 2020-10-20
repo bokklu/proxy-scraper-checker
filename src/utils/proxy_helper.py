@@ -1,3 +1,4 @@
+import logging
 from contracts.enums import Response, ProxyType, Provider
 from contracts.proxy import Proxy
 
@@ -5,11 +6,9 @@ from contracts.proxy import Proxy
 class ProxyHelper:
 
     @staticmethod
-    def create_and_get_proxy_stats(task_results, provider_id):
+    def create_and_log_proxy_stats(proxies, task_results, provider_id):
         proxy_records = set()
         http_c = http_ssl_c = socks4_c = socks5_c = 0
-
-        nonworking_http = []
 
         for t in task_results:
 
@@ -28,15 +27,11 @@ class ProxyHelper:
                                         provider_id=provider_id,
                                         access_type_id=t.access_type_id, type_id=t.type_id, speed=t.speed,
                                         uptime=t.uptime))
-            else:
-                if t.type_id is ProxyType.HTTP.value:
-                    if t.ssl is False:
-                        nonworking_http.append(f'{t.address}:{t.port}')
 
-        with open('non-working-http.txt', 'w') as f:
-            for item in nonworking_http:
-                f.write("%s\n" % item)
+        logging.info(f'Successful: {len(proxy_records)}/{len(task_results)}\n'
+                     f'HTTP => [{http_c}/{len(proxies[0])}]\n'
+                     f'HTTP SSL => [{http_ssl_c}/{len(proxies[1])}]\n'
+                     f'SOCKS4 => [{socks4_c}/{len(proxies[2])}]\n'
+                     f'SOCKS5 => [{socks5_c}/{len(proxies[3])}]')
 
-        return {'proxies': proxy_records,
-                'http_count': http_c, 'http_ssl_count': http_ssl_c,
-                'socks4_count': socks4_c, 'socks5_count': socks5_c}
+        return proxy_records
