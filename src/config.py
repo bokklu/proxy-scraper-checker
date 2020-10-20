@@ -10,7 +10,7 @@ class Base:
         asn_db='F:\Projects\proxy-scraper-checker\src\data\GeoLite2-ASN.mmdb'
     )
     task_pool = 1750
-    max_retries = 3
+    max_retries = 10
     timeout = 8
     cache_api_timeout = 10
     cleanup_hour_range = 2

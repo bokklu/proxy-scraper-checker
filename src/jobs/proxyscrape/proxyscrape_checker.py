@@ -2,6 +2,7 @@ import asyncio
 from aiohttp import ClientSession
 from contracts.enums import ScrapeProxyType, ProxyType, Provider
 from utils.proxy_helper import ProxyHelper
+from contracts.scrape_info import ScrapeInfo
 
 
 class ProxyScrapeChecker:
@@ -15,20 +16,28 @@ class ProxyScrapeChecker:
         self._proxyscrape_scraper = proxyscrape_scraper
 
     async def check_proxies(self):
-        async with ClientSession() as client_session:
-            proxyscrape_http_task = asyncio.create_task(self._proxyscrape_scraper.scrape(client_session, ScrapeProxyType.HTTP))
-            proxyscrape_http_ssl_task = asyncio.create_task(self._proxyscrape_scraper.scrape(client_session, ScrapeProxyType.HTTPS))
-            proxyscrape_socks4_task = asyncio.create_task(self._proxyscrape_scraper.scrape(client_session, ScrapeProxyType.SOCKS4))
-            proxyscrape_socks5_task = asyncio.create_task(self._proxyscrape_scraper.scrape(client_session, ScrapeProxyType.SOCKS5))
+        http_proxies_file = open("proxyscrape-http-proxies.txt", "r")
+        https_proxies_file = open("proxyscrape-https-proxies.txt", "r")
+        socks4_proxies_file = open("proxyscrape-socks4-proxies.txt", "r")
+        socks5_proxies_file = open("proxyscrape-socks5-proxies.txt", "r")
 
-            provider_proxies = await asyncio.gather(*[proxyscrape_http_task, proxyscrape_http_ssl_task,
-                                                      proxyscrape_socks4_task, proxyscrape_socks5_task])
+        http_proxies = []
+        https_proxies = []
+        socks4_proxies = []
+        socks5_proxies = []
+
+        for proxy in http_proxies_file: http_proxies.append(ScrapeInfo(proxy=proxy.rstrip('\n')))
+        for proxy in https_proxies_file: https_proxies.append(ScrapeInfo(proxy=proxy.rstrip('\n')))
+        for proxy in socks4_proxies_file: socks4_proxies.append(ScrapeInfo(proxy=proxy.rstrip('\n')))
+        for proxy in socks5_proxies_file: socks5_proxies.append(ScrapeInfo(proxy=proxy.rstrip('\n')))
 
         self._proxy_repo.get_access_type = True
 
-        checked_proxies = await self._proxy_repo.check_proxies(provider_proxies)
+        read_proxies = [http_proxies, https_proxies, socks4_proxies, socks5_proxies]
 
-        proxies = ProxyHelper.create_and_log_proxy_stats(provider_proxies, checked_proxies, Provider.PROXYSCRAPE.value)
+        checked_proxies = await self._proxy_repo.check_proxies(read_proxies)
+
+        proxies = ProxyHelper.create_and_log_proxy_stats(read_proxies, checked_proxies, Provider.PROXYSCRAPE.value)
 
         isps, locations, geo_filtered_proxies = self._geo_repo.geo_resolve(proxies, get_country=True)
 
