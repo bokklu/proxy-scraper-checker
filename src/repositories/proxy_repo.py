@@ -6,6 +6,7 @@ from contracts.statistics import Statistics
 from contracts.enums import Response, ProxyAccessType, ProxyType
 from aiosocks.connector import ProxyConnector, ProxyClientRequest
 from utils.task_pool import TaskPool
+import time
 
 
 class ProxyRepo:
@@ -17,7 +18,7 @@ class ProxyRepo:
         self.get_access_type = False
 
     async def check_proxies(self, provider_proxies):
-        connector = ProxyConnector(remote_resolve=False, limit=None)
+        connector = ProxyConnector(remote_resolve=False, limit=None, force_close=True)
         #trace_config = aiohttp.TraceConfig()
         #trace_config.on_request_start.append(self._on_request_start)
         #trace_config.on_request_end.append(self._on_request_end)
@@ -32,6 +33,7 @@ class ProxyRepo:
 
     async def _ping(self, session, proxy_type, scrape_info, ssl=False):
         statistics = Statistics(type_id=proxy_type.value)
+        req_start_time = time.time()
         response_times = []
         ssl = 'https' if ssl is True else 'http'
         for attempt in range(self._max_retries):
@@ -41,7 +43,7 @@ class ProxyRepo:
                                            proxy=f'socks4://91.200.125.75:4145',
                                            allow_redirects=False, ssl=False) as response:
                         if response.status == 200 or response.status == 302:
-                            continue
+                            response_times.append(int(round((time.time() - req_start_time) * 1000)))
                         else:
                             statistics.result_type = Response.OTHER
                             return statistics
