@@ -17,8 +17,6 @@ class ProxyType(Enum):
 class Response(Enum):
     SUCCESS = 1
     ERROR = 2
-    TIMEOUT = 3
-    OTHER = 4
 
 
 class ProxyAccessType(Enum):

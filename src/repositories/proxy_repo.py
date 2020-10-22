@@ -1,7 +1,5 @@
-import asyncio
 import async_timeout
 import aiohttp
-from aiosocks.errors import SocksError
 from contracts.statistics import Statistics
 from contracts.enums import Response, ProxyAccessType, ProxyType
 from aiosocks.connector import ProxyConnector, ProxyClientRequest
@@ -19,10 +17,6 @@ class ProxyRepo:
 
     async def check_proxies(self, provider_proxies):
         connector = ProxyConnector(remote_resolve=False, limit=None, force_close=True)
-        #trace_config = aiohttp.TraceConfig()
-        #trace_config.on_request_start.append(self._on_request_start)
-        #trace_config.on_request_end.append(self._on_request_end)
-        #trace_config.on_connection_create_end.append(self._on_connection_create_end)
         async with aiohttp.ClientSession(connector=connector, request_class=ProxyClientRequest) as session, TaskPool(self._task_pool) as tasks:
             for x in provider_proxies[0]: await tasks.put(self._ping(session, ProxyType.HTTP, x))
             for x in provider_proxies[1]: await tasks.put(self._ping(session, ProxyType.HTTP, x, ssl=True))
@@ -40,28 +34,12 @@ class ProxyRepo:
             try:
                 async with async_timeout.timeout(self._timeout):
                     async with session.get(f'{ssl}://example.com',
-                                           proxy=f'socks4://91.200.125.75:4145',
+                                           proxy=f'{proxy_type.name.lower()}://{scrape_info.proxy}',
                                            allow_redirects=False, ssl=False) as response:
                         if response.status == 200 or response.status == 302:
                             response_times.append(int(round((time.time() - req_start_time) * 1000)))
-                        else:
-                            statistics.result_type = Response.OTHER
-                            return statistics
-            except asyncio.TimeoutError:
+            except Exception:
                 continue
-            except (aiohttp.ServerDisconnectedError, SocksError, OSError) as server_os_error:
-                print(f'{scrape_info.proxy} {proxy_type.name} Server/OS Error: {server_os_error}')
-                if attempt == self._max_retries - 1:
-                    statistics.result_type = Response.ERROR
-                    return statistics
-            except aiohttp.ClientHttpProxyError as http_error:
-                print(f'{scrape_info.proxy} {proxy_type.name} Http Error: {http_error}')
-                statistics.result_type = Response.OTHER
-                return statistics
-            except (aiohttp.ClientProxyConnectionError, Exception) as break_ex:
-                print(f'{scrape_info.proxy} {proxy_type.name} Break Ex: {break_ex}')
-                statistics.result_type = Response.ERROR
-                return statistics
 
         if response_times:
             print(f'{scrape_info.proxy} for {proxy_type.name} is successful')
@@ -87,17 +65,3 @@ class ProxyRepo:
             return ProxyAccessType.ANONYMOUS.value
         elif 'Via' and 'X-Cache-Lookup' not in response_headers:
             return ProxyAccessType.ELITE.value
-
-    @staticmethod
-    async def _on_request_start(session, trace_config_ctx, params):
-        trace_config_ctx.start = asyncio.get_event_loop().time()
-
-    @staticmethod
-    async def _on_request_end(session, trace_config_ctx, params):
-        elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
-        #print("Request took {}".format(elapsed))
-
-    @staticmethod
-    async def _on_connection_create_end(session, trace_config_ctx, params):
-        elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
-        #print("Connection create start took {}".format(elapsed))

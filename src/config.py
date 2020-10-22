@@ -6,8 +6,8 @@ class Base:
         proxyscrape='https://api.proxyscrape.com/?request=displayproxies'
     )
     geo_db = dict(
-        city_db='F:\Projects\proxy-scraper-checker\src\data\GeoLite2-City.mmdb',
-        asn_db='F:\Projects\proxy-scraper-checker\src\data\GeoLite2-ASN.mmdb'
+        city_db='/app/data/GeoLite2-City.mmdb',
+        asn_db='/app/data/GeoLite2-ASN.mmdb'
     )
     task_pool = 1750
     max_retries = 3
