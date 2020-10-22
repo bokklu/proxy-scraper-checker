@@ -24,7 +24,9 @@ class PldownChecker:
 
         http_only = provider_proxies[0].difference(provider_proxies[1])
 
-        checked_proxies = await self._proxy_repo.check_proxies(provider_proxies)
+        set_proxies = [http_only, provider_proxies[1], provider_proxies[2], provider_proxies[3]]
+
+        checked_proxies = await self._proxy_repo.check_proxies(set_proxies)
 
         proxies = ProxyHelper.create_and_log_proxy_stats(provider_proxies, checked_proxies, Provider.PLDOWN.value)
 
