@@ -2,7 +2,7 @@ import asyncio
 import logging
 import async_timeout
 from contracts.scrape_info import ScrapeInfo
-from contracts.enums import ProxyType
+from contracts.enums import ScrapeProxyType
 
 
 class ProxyScrapeScraper:
@@ -11,14 +11,16 @@ class ProxyScrapeScraper:
         self._config = config
 
     async def scrape(self, session, proxy_type):
+
+        if proxy_type is ScrapeProxyType.HTTPS:
+            ssl = 'yes'
+            proxy_type = ScrapeProxyType.HTTP
+        elif proxy_type is ScrapeProxyType.HTTP:
+            ssl = 'no'
+        else:
+            ssl = 'all'
+
         for retry in range(10):
-
-            if proxy_type is ProxyType.HTTPS:
-                ssl = 'yes'
-                proxy_type = ProxyType.HTTP
-            else:
-                ssl = 'all'
-
             try:
                 async with async_timeout.timeout(7):
                     async with session.get(f'{self._config["provider_connections"]["proxyscrape"]}&proxytype={str.lower(proxy_type.name)}&ssl={ssl}') as response:

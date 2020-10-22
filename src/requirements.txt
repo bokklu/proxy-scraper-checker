@@ -1,6 +1,6 @@
 asyncio
 aiohttp
-aiohttp-socks
+aiosocks
 asyncpg
 schedule
 aenum

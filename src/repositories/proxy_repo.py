@@ -1,10 +1,10 @@
-import asyncio
 import async_timeout
 import aiohttp
-import time
-from aiohttp_socks import ProxyConnector, ProxyError
 from contracts.statistics import Statistics
 from contracts.enums import Response, ProxyAccessType, ProxyType
+from aiosocks.connector import ProxyConnector, ProxyClientRequest
+from utils.task_pool import TaskPool
+import time
 
 
 class ProxyRepo:
@@ -12,77 +12,37 @@ class ProxyRepo:
     def __init__(self, config):
         self._timeout = config['timeout']
         self._max_retries = config['max_retries']
+        self._task_pool = config['task_pool']
         self.get_access_type = False
 
-    async def ping_http(self, http_type, scrape_info):
-        statistics = Statistics(type_id=http_type.value)
-        async with aiohttp.ClientSession() as session:
-            response_times = []
-            for attempt in range(self._max_retries):
-                try:
-                    async with async_timeout.timeout(self._timeout):
-                        req_start_time = time.time()
-                        async with session.get(f'{http_type.name.lower()}://example.com', proxy=f'http://{scrape_info.proxy}', allow_redirects=False, verify_ssl=False) as response:
-                            if response.status == 200 or response.status == 302:
-                                response_times.append(int(round((time.time() - req_start_time) * 1000)))
-                            else:
-                                statistics.result_type = Response.OTHER
-                                return statistics
-                except asyncio.TimeoutError:
-                    continue
-                except (aiohttp.ServerDisconnectedError, OSError) as server_os_error:
-                    print(f'{scrape_info.proxy} {http_type.name} Server/OS Error: {server_os_error}')
-                    if attempt == self._max_retries - 1:
-                        statistics.result_type = Response.ERROR
-                        return statistics
-                    continue
-                except (aiohttp.ClientProxyConnectionError, Exception) as break_ex:
-                    print(f'{scrape_info.proxy} {http_type.name} Break Ex: {break_ex}')
-                    statistics.result_type = Response.ERROR
-                    return statistics
+    async def check_proxies(self, provider_proxies):
+        connector = ProxyConnector(remote_resolve=False, limit=None, force_close=True)
+        async with aiohttp.ClientSession(connector=connector, request_class=ProxyClientRequest) as session, TaskPool(self._task_pool) as tasks:
+            for x in provider_proxies[0]: await tasks.put(self._ping(session, ProxyType.HTTP, x))
+            for x in provider_proxies[1]: await tasks.put(self._ping(session, ProxyType.HTTP, x, ssl=True))
+            for x in provider_proxies[2]: await tasks.put(self._ping(session, ProxyType.SOCKS4, x))
+            for x in provider_proxies[3]: await tasks.put(self._ping(session, ProxyType.SOCKS5, x))
 
-            if response_times:
-                print(f'{scrape_info.proxy} for {http_type.name} is successful')
-                ip_tokens = scrape_info.proxy.split(':')
-                statistics.address = ip_tokens[0]
-                statistics.port = ip_tokens[1]
-                statistics.country_code = scrape_info.country_code
-                statistics.result_type = Response.SUCCESS
-                statistics.speed = int(sum(response_times) / len(response_times))
-                statistics.uptime = len(response_times)
-                statistics.access_type_id = self._check_access_type(response.headers) if self.get_access_type else scrape_info.access_type_id
-        return statistics
+        return tasks.results
 
-    async def ping_socks(self, socks_type, scrape_info):
-        statistics = Statistics(type_id=socks_type.value)
-        connector = ProxyConnector.from_url(f'{socks_type.name.lower()}://{scrape_info.proxy}')
-        async with aiohttp.ClientSession(connector=connector) as client_session:
-            response_times = []
-            for attempt in range(self._max_retries):
-                try:
-                    async with async_timeout.timeout(self._timeout):
-                        req_start_time = time.time()
-                        async with client_session.get('http://example.com', allow_redirects=False) as response:
-                            if response.status == 200 or response.status == 302:
-                                response_times.append(int(round((time.time() - req_start_time) * 1000)))
-                            else:
-                                statistics.result_type = Response.OTHER
-                                return statistics
-                except asyncio.TimeoutError:
-                    continue
-                except (OSError, ProxyError) as error_ex:
-                    print(f'{scrape_info.proxy} Error: {error_ex}')
-                    if attempt == self._max_retries - 1:
-                        statistics.result_type = Response.ERROR
-                        return statistics
-                    continue
-                except (aiohttp.ClientProxyConnectionError, Exception) as break_ex:
-                    print(f'{scrape_info.proxy} Break Ex: {break_ex}')
-                    statistics.result_type = Response.ERROR
-                    return statistics
+    async def _ping(self, session, proxy_type, scrape_info, ssl=False):
+        statistics = Statistics(type_id=proxy_type.value)
+        req_start_time = time.time()
+        response_times = []
+        ssl = 'https' if ssl is True else 'http'
+        for attempt in range(self._max_retries):
+            try:
+                async with async_timeout.timeout(self._timeout):
+                    async with session.get(f'{ssl}://example.com',
+                                           proxy=f'{proxy_type.name.lower()}://{scrape_info.proxy}',
+                                           allow_redirects=False, ssl=False) as response:
+                        if response.status == 200 or response.status == 302:
+                            response_times.append(int(round((time.time() - req_start_time) * 1000)))
+            except Exception:
+                continue
 
         if response_times:
-            print(f'{scrape_info.proxy} for {socks_type.name} is successful')
+            print(f'{scrape_info.proxy} for {proxy_type.name} is successful')
             ip_tokens = scrape_info.proxy.split(':')
             statistics.address = ip_tokens[0]
             statistics.port = ip_tokens[1]
@@ -90,8 +50,11 @@ class ProxyRepo:
             statistics.result_type = Response.SUCCESS
             statistics.speed = int(sum(response_times) / len(response_times))
             statistics.uptime = len(response_times)
-            statistics.access_type_id = self._check_access_type(response.headers) if self.get_access_type else scrape_info.access_type_id
-
+            statistics.access_type_id = \
+                self._check_access_type(response.headers) if self.get_access_type else scrape_info.access_type_id
+            statistics.ssl = False if proxy_type is ProxyType.HTTP else True
+            statistics.get = True
+            statistics.post = True
         return statistics
 
     @staticmethod

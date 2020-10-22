@@ -1,18 +1,22 @@
 from aenum import Enum
 
 
-class ProxyType(Enum):
+class ScrapeProxyType(Enum):
     HTTP = 1
     HTTPS = 2
     SOCKS4 = 3
     SOCKS5 = 4
 
 
+class ProxyType(Enum):
+    HTTP = 1
+    SOCKS4 = 2
+    SOCKS5 = 3
+
+
 class Response(Enum):
     SUCCESS = 1
     ERROR = 2
-    TIMEOUT = 3
-    OTHER = 4
 
 
 class ProxyAccessType(Enum):

@@ -10,6 +10,7 @@ class TaskPool(object):
         self.closed = False
 
     async def put(self, coro):
+
         if self.closed:
             raise RuntimeError("Trying put items into a closed TaskPool")
 

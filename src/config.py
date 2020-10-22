@@ -9,8 +9,7 @@ class Base:
         city_db='/app/data/GeoLite2-City.mmdb',
         asn_db='/app/data/GeoLite2-ASN.mmdb'
     )
-    proxyscrape_pool_amount = 5000
-    pldown_pool_amount = 5000
+    task_pool = 1750
     max_retries = 3
     timeout = 8
     cache_api_timeout = 10
@@ -33,9 +32,8 @@ class DevelopmentConfig(Base):
         return dict(isdevelopment=self.isdevelopment, isproduction=super().isproduction,
                     provider_connections=super().provider_connections, sql=self.sql, cache_api=self.cache_api,
                     cache_api_timeout=super().cache_api_timeout, geo_db=self.geo_db,
-                    proxyscrape_pool_amount=super().proxyscrape_pool_amount, pldown_pool_amount=super().pldown_pool_amount,
-                    max_retries=super().max_retries, timeout=super().timeout, cleanup_hour_range=super().cleanup_hour_range,
-                    cleanup_pool_amount=super().cleanup_pool_amount)
+                    task_pool=super().task_pool, max_retries=super().max_retries, timeout=super().timeout,
+                    cleanup_hour_range=super().cleanup_hour_range, cleanup_pool_amount=super().cleanup_pool_amount)
 
 
 class ProductionConfig(Base):
@@ -52,6 +50,5 @@ class ProductionConfig(Base):
         return dict(isdevelopment=super().isdevelopment, isproduction=self.isproduction,
                     provider_connections=super().provider_connections, sql=self.sql, cache_api=self.cache_api,
                     cache_api_timeout=super().cache_api_timeout, geo_db=self.geo_db,
-                    proxyscrape_pool_amount=super().proxyscrape_pool_amount, pldown_pool_amount=super().pldown_pool_amount,
-                    max_retries=super().max_retries, timeout=super().timeout, cleanup_hour_range=super().cleanup_hour_range,
-                    cleanup_pool_amount=super().cleanup_pool_amount)
+                    task_pool=super().task_pool, max_retries=super().max_retries, timeout=super().timeout,
+                    cleanup_hour_range=super().cleanup_hour_range, cleanup_pool_amount=super().cleanup_pool_amount)
